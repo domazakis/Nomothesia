@@ -14,13 +14,23 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
+import ssl
 import time
 from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
 
+from nomothesia.fetch.alysida import (
+    SfalmaAlysidas,
+    context_me_endiamesa,
+    einai_sfalma_alysidas,
+    endiamesa_pistopoiitika,
+)
 from nomothesia.registry import repo_riza
+
+logger = logging.getLogger(__name__)
 
 # Οι κεφαλίδες HTTP είναι ASCII — δεν μπαίνουν ελληνικά εδώ.
 USER_AGENT = (
@@ -87,11 +97,18 @@ class Lipsi:
         self.fakelos_cache = fakelos_cache or (repo_riza() / ".cache")
         self.fakelos_cache.mkdir(parents=True, exist_ok=True)
         self.pausi = pausi
+        self.timeout = timeout
         self._teleftaio_aitima = 0.0
-        self._client = httpx.Client(
+        self._epipleon_pem = ""
+        self._dokimasmenoi_hosts: set[str] = set()
+        self._client = self._neos_client()
+
+    def _neos_client(self) -> httpx.Client:
+        return httpx.Client(
             headers={"User-Agent": USER_AGENT},
-            timeout=timeout,
+            timeout=self.timeout,
             follow_redirects=True,
+            verify=context_me_endiamesa(self._epipleon_pem),
         )
 
     def __enter__(self) -> Lipsi:
@@ -112,6 +129,36 @@ class Lipsi:
 
     def _diadromi_meta(self, url: str) -> Path:
         return self.fakelos_cache / f"{self._kleidi(url)}.json"
+
+    def _symplirose_alysida(self, url: str, exc: Exception) -> bool:
+        """Δοκιμάζει να καλύψει ελλιπή αλυσίδα πιστοποιητικών του διακομιστή.
+
+        Επιστρέφει `True` όταν κάτι όντως προστέθηκε, δηλαδή όταν αξίζει άμεση
+        επανάληψη. Μία προσπάθεια ανά host: αν δεν έλυσε το πρόβλημα την πρώτη
+        φορά, δεν θα το λύσει ούτε την τέταρτη.
+        """
+        if not einai_sfalma_alysidas(exc):
+            return False
+
+        diefthynsi = httpx.URL(url)
+        host = diefthynsi.host
+        if not host or host in self._dokimasmenoi_hosts:
+            return False
+        self._dokimasmenoi_hosts.add(host)
+
+        try:
+            pem = endiamesa_pistopoiitika(host, port=diefthynsi.port or 443)
+        except (SfalmaAlysidas, OSError, ssl.SSLError) as sfalma:
+            logger.warning("δεν συμπληρώθηκε η αλυσίδα του %s: %s", host, sfalma)
+            return False
+        if not pem:
+            return False
+
+        logger.info("συμπληρώθηκε η αλυσίδα πιστοποιητικών του %s", host)
+        self._epipleon_pem += pem
+        self._client.close()
+        self._client = self._neos_client()
+        return True
 
     def _perimene(self) -> None:
         perasan = time.monotonic() - self._teleftaio_aitima
@@ -144,6 +191,14 @@ class Lipsi:
                 # Άρνηση πολιτικής δικτύου. Η επανάληψη δεν πρόκειται να
                 # βοηθήσει — σταματάμε αμέσως με εξήγηση.
                 raise SfalmaLipsis(_minima_apokleismou(url, exc)) from exc
+            except httpx.ConnectError as exc:
+                # Ελλιπής αλυσίδα πιστοποιητικών: αν τη συμπληρώσουμε, η αμέσως
+                # επόμενη προσπάθεια πετυχαίνει — δεν χρειάζεται αναμονή.
+                if self._symplirose_alysida(url, exc):
+                    continue
+                teleftaio_sfalma = exc
+                time.sleep(2**prospatheia)
+                continue
             except httpx.HTTPError as exc:
                 teleftaio_sfalma = exc
                 time.sleep(2**prospatheia)
