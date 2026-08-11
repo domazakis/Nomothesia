@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from nomothesia.fetch.base import ApotelesmaLipsis
+from nomothesia.fetch.base import ApotelesmaLipsis, SfalmaLipsis
 from nomothesia.pipeline import SfalmaAgogou, epexergasou
 from nomothesia.registry import fortose_mitroo
 
@@ -26,6 +26,29 @@ class PsevdiLipsi:
 
     def kateveste(self, url: str, *, agnoise_cache: bool = False) -> ApotelesmaLipsis:
         self.aitimata.append(url)
+        return ApotelesmaLipsis(
+            perieksomeno=self.perieksomeno,
+            url=url,
+            apo_cache=False,
+            typos_perieksomenou="text/html",
+        )
+
+
+class NekriPigi(PsevdiLipsi):
+    """Λήψη που αποτυγχάνει για όσα URL περιέχουν ένα δεδομένο κομμάτι.
+
+    Αναπαριστά την πραγματική συνθήκη: το et.gr δεν απαντά, ενώ οι υπόλοιπες
+    πηγές δουλεύουν κανονικά.
+    """
+
+    def __init__(self, perieksomeno: bytes, nekro: str) -> None:
+        super().__init__(perieksomeno)
+        self.nekro = nekro
+
+    def kateveste(self, url: str, *, agnoise_cache: bool = False) -> ApotelesmaLipsis:
+        self.aitimata.append(url)
+        if self.nekro in url:
+            raise SfalmaLipsis(f"απέτυχε η λήψη του {url}")
         return ApotelesmaLipsis(
             perieksomeno=self.perieksomeno,
             url=url,
@@ -87,6 +110,36 @@ def test_agogos_protima_tin_pigi_fek(kok, deigma):
     lipsi = PsevdiLipsi(deigma)
     epexergasou(kok, lipsi)
     assert "et.gr" in lipsi.aitimata[0]
+
+
+def test_agogos_pefti_stin_epomeni_pigi_otan_i_proti_apotygchanei(kok, deigma, tmp_path):
+    """Μια νεκρή πηγή δεν πρέπει να αφήνει το νομοθέτημα εκτός corpus.
+
+    Ο ΚΟΚ έχει και κωδικοποιημένη έκδοση· όταν το ΦΕΚ δεν κατεβαίνει, αυτή
+    είναι προτιμότερη από το τίποτα.
+    """
+    lipsi = NekriPigi(deigma, nekro="et.gr")
+    apotelesma = epexergasou(kok, lipsi)
+
+    assert len(lipsi.aitimata) == 2
+    assert "et.gr" in lipsi.aitimata[0]
+    assert (tmp_path / kok.id / "full.md").exists()
+    assert apotelesma.plithos_arthron == 4
+
+
+def test_i_ptosi_se_alli_pigi_dilonetai(kok, deigma):
+    """Το κείμενο δεν προέρχεται από το ΦΕΚ — αυτό δεν πρέπει να περάσει σιωπηλά."""
+    apotelesma = epexergasou(kok, NekriPigi(deigma, nekro="et.gr"))
+    assert any("προτιμώμενη πηγή απέτυχε" in p for p in apotelesma.proeidopoiiseis)
+
+
+def test_apotychia_olon_ton_pigon_anaferei_kathe_aitia(kok, deigma):
+    lipsi = NekriPigi(deigma, nekro="/")  # κάθε URL έχει «/» — πέφτουν όλες
+    with pytest.raises(SfalmaAgogou) as sfalma:
+        epexergasou(kok, lipsi)
+
+    minima = str(sfalma.value)
+    assert "et.gr" in minima and "kodiko.gr" in minima
 
 
 def test_paragomeno_jsonl_einai_egkyro(kok, deigma, tmp_path):

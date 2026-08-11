@@ -49,15 +49,19 @@ class ApotelesmaAgogou:
     proeidopoiiseis: list[str]
 
 
-def _epilexe_pigi(n: Nomothetima):
+def _seira_pigon(n: Nomothetima) -> list:
+    """Όλες οι πηγές του νομοθετήματος, με την προτιμώμενη πρώτη.
+
+    Επιστρέφει σειρά και όχι μία πηγή, γιατί οι εναλλακτικές υπάρχουν ακριβώς
+    για να χρησιμοποιηθούν: το et.gr πέφτει, μπλοκάρει διευθύνσεις ή αλλάζει
+    endpoint, και τότε η κωδικοποιημένη έκδοση είναι προτιμότερη από το τίποτα.
+    """
     seira = PROTERAIOTITA_PIGON.get(n.typos, PROTERAIOTITA_EX_ORISMOU)
-    for typos in seira:
-        for pigi in n.piges:
-            if pigi.typos is typos:
-                return pigi
-    if n.piges:
-        return n.piges[0]
-    raise SfalmaAgogou(f"{n.id}: καμία διαθέσιμη πηγή")
+    taxinomimenes = [pigi for typos in seira for pigi in n.piges if pigi.typos is typos]
+    ypoloipes = [pigi for pigi in n.piges if pigi not in taxinomimenes]
+    if not (taxinomimenes or ypoloipes):
+        raise SfalmaAgogou(f"{n.id}: καμία διαθέσιμη πηγή")
+    return taxinomimenes + ypoloipes
 
 
 def _epalithefse_fek(n: Nomothetima, akatergasto: str) -> bool:
@@ -93,20 +97,54 @@ def _filtrare_arthra(n: Nomothetima, arthra: list[Arthro]) -> list[Arthro]:
 def epexergasou(
     n: Nomothetima, lipsi: Lipsi, *, agnoise_cache: bool = False
 ) -> ApotelesmaAgogou:
-    """Τρέχει ολόκληρο τον αγωγό για ένα νομοθέτημα και γράφει τα αρχεία του."""
+    """Τρέχει τον αγωγό για ένα νομοθέτημα και γράφει τα αρχεία του.
+
+    Δοκιμάζει τις πηγές με τη σειρά προτίμησης και σταματά στην πρώτη που
+    αποδίδει κείμενο με άρθρα. Η πτώση σε εναλλακτική πηγή καταγράφεται ως
+    προειδοποίηση: το κείμενο είναι χρήσιμο, αλλά δεν προέρχεται από το ΦΕΚ.
+    """
+    apotyxies: list[tuple[str, str]] = []
+
+    for seira, pigi in enumerate(_seira_pigon(n)):
+        try:
+            apotelesma = _apo_pigi(n, pigi, lipsi, agnoise_cache=agnoise_cache)
+        except SfalmaAgogou as exc:
+            apotyxies.append((pigi.typos.value, str(exc)))
+            continue
+
+        if seira:
+            apotelesma.proeidopoiiseis.insert(
+                0,
+                f"η προτιμώμενη πηγή απέτυχε — το κείμενο προέρχεται από "
+                f"{pigi.typos.value} ({pigi.url})",
+            )
+        return apotelesma
+
+    if len(apotyxies) == 1:
+        raise SfalmaAgogou(f"{n.id}: {apotyxies[0][1]}")
+    perigrafes = "; ".join(f"{typos}: {minima}" for typos, minima in apotyxies)
+    raise SfalmaAgogou(
+        f"{n.id}: καμία από τις {len(apotyxies)} πηγές δεν απέδωσε κείμενο — "
+        f"{perigrafes}"
+    )
+
+
+def _apo_pigi(
+    n: Nomothetima, pigi, lipsi: Lipsi, *, agnoise_cache: bool
+) -> ApotelesmaAgogou:
+    """Ολόκληρος ο αγωγός πάνω σε **μία** πηγή. Σφάλμα σημαίνει «δοκίμασε άλλη»."""
     proeidopoiiseis: list[str] = []
-    pigi = _epilexe_pigi(n)
 
     try:
         apotelesma = lipsi.kateveste(pigi.url, agnoise_cache=agnoise_cache)
     except SfalmaLipsis as exc:
-        raise SfalmaAgogou(f"{n.id}: {exc}") from exc
+        raise SfalmaAgogou(str(exc)) from exc
 
     if apotelesma.einai_pdf:
         if not exei_epipedo_keimenou(apotelesma.perieksomeno):
             raise SfalmaAgogou(
-                f"{n.id}: το PDF δεν έχει επίπεδο κειμένου (σαρωμένο). "
-                f"Χρειάζεται OCR — εγκατάσταση με `pip install 'nomothesia[ocr]'`."
+                "το PDF δεν έχει επίπεδο κειμένου (σαρωμένο). "
+                "Χρειάζεται OCR — εγκατάσταση με `pip install 'nomothesia[ocr]'`."
             )
         akatergasto = keimeno_apo_pdf(apotelesma.perieksomeno)
     else:
@@ -114,7 +152,7 @@ def epexergasou(
 
     keimeno = kanonikopoiise(akatergasto)
     if not keimeno.strip():
-        raise SfalmaAgogou(f"{n.id}: δεν εξήχθη καθόλου κείμενο από {pigi.url}")
+        raise SfalmaAgogou(f"δεν εξήχθη καθόλου κείμενο από {pigi.url}")
 
     epalithevmeno = _epalithefse_fek(n, akatergasto)
     if n.fek and not epalithevmeno:
@@ -126,8 +164,8 @@ def epexergasou(
     arthra = _filtrare_arthra(n, analyse_domi(keimeno))
     if not arthra:
         raise SfalmaAgogou(
-            f"{n.id}: δεν εντοπίστηκε κανένα άρθρο. Πιθανή αιτία: αλλαγή "
-            f"διάταξης στην πηγή ή λάθος URL."
+            "δεν εντοπίστηκε κανένα άρθρο. Πιθανή αιτία: αλλαγή "
+            "διάταξης στην πηγή ή λάθος URL."
         )
 
     fakelos = n.fakelos_corpus()

@@ -194,6 +194,15 @@ class Lipsi:
                 typos_perieksomenou=apantisi.headers.get("Content-Type", ""),
             )
 
+        # Η αιτία μπαίνει στο μήνυμα, όχι μόνο στο `raise ... from`: η εντολή
+        # τρέχει και μέσα σε GitHub Action, όπου το μόνο που μένει είναι το log.
+        # Χωρίς αυτήν, ένα timeout και ένα σπασμένο URL μοιάζουν ίδια.
+        aitia = (
+            f"{type(teleftaio_sfalma).__name__}: {teleftaio_sfalma}"
+            if teleftaio_sfalma
+            else "άγνωστη αιτία"
+        )
         raise SfalmaLipsis(
-            f"απέτυχε η λήψη του {url} μετά από {MEGISTES_PROSPATHEIES} προσπάθειες"
+            f"απέτυχε η λήψη του {url} μετά από {MEGISTES_PROSPATHEIES} "
+            f"προσπάθειες ({aitia})"
         ) from teleftaio_sfalma
