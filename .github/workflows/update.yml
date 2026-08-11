@@ -2,6 +2,11 @@ name: Έλεγχος αλλαγών νομοθεσίας
 
 # Τρέχει κάθε Δευτέρα πρωί και ανοίγει pull request μόνο αν κάτι όντως άλλαξε.
 # Σκοπός: να μη χρειάζεται να θυμάται κανείς να ελέγχει τη νομοθεσία.
+#
+# Χρησιμεύει και ως χειροκίνητος τρόπος να γεμίσει το corpus: οι runners της
+# GitHub έχουν ελεύθερη πρόσβαση στο et.gr, σε αντίθεση με τις cloud συνεδρίες
+# που τρέχουν πίσω από περιοριστική πολιτική δικτύου. Actions → «Έλεγχος
+# αλλαγών νομοθεσίας» → Run workflow.
 on:
   schedule:
     - cron: "0 6 * * 1"
@@ -28,12 +33,26 @@ jobs:
       - name: Έλεγχος μητρώου
         run: uv run nomothesia validate
 
+      # Ο runner ξεκινά κάθε φορά από το μηδέν, οπότε χωρίς αυτό το βήμα ο
+      # conditional GET δεν έχει τι να συγκρίνει και ξανακατεβαίνουν και τα 20
+      # ΦΕΚ κάθε Δευτέρα. Η μνήμη είναι αναπαράξιμη· αν χαθεί, απλώς αργεί.
+      - name: Επαναφορά τοπικής μνήμης λήψεων
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: nomothesia-cache-${{ github.run_id }}
+          restore-keys: nomothesia-cache-
+
       - name: Λήψη νομοθεσίας
         id: fetch
-        # Μια αποτυχημένη πηγή δεν πρέπει να ακυρώνει τις υπόλοιπες· το βήμα
-        # καταγράφει την έξοδο και συνεχίζει.
+        # Μια αποτυχημένη πηγή δεν πρέπει να ακυρώνει τις υπόλοιπες, γι' αυτό το
+        # βήμα συνεχίζει. Το `pipefail` όμως είναι απαραίτητο: χωρίς αυτό ο
+        # κωδικός εξόδου του `fetch` χάνεται μέσα στο `tee` και η αποτυχία
+        # γίνεται αόρατη. Το τελευταίο βήμα του job τη μετατρέπει σε κόκκινο
+        # run — αφού πρώτα ανοίξει το pull request για όσα πέτυχαν.
         continue-on-error: true
         run: |
+          set -o pipefail
           uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
 
       - name: Εντοπισμός αλλαγών
@@ -45,6 +64,23 @@ jobs:
             echo "allages=ochi" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Σύνταξη σώματος pull request
+        if: steps.diff.outputs.allages == 'nai'
+        run: |
+          {
+            echo "Αυτόματη ενημέρωση του corpus από τις επίσημες πηγές."
+            echo
+            if [ "${{ steps.fetch.outcome }}" = "failure" ]; then
+              echo "> [!WARNING]"
+              echo "> Μία ή περισσότερες πηγές απέτυχαν. Το pull request"
+              echo "> περιέχει μόνο όσα νομοθετήματα κατέβηκαν σωστά."
+              echo
+            fi
+            echo '```'
+            cat /tmp/fetch.log
+            echo '```'
+          } > /tmp/pr-body.md
+
       - name: Άνοιγμα pull request
         if: steps.diff.outputs.allages == 'nai'
         uses: peter-evans/create-pull-request@v7
@@ -52,6 +88,40 @@ jobs:
           branch: enimerosi-nomothesias
           title: "Ενημέρωση νομοθεσίας"
           commit-message: "Ενημέρωση corpus από τις επίσημες πηγές"
-          body-path: /tmp/fetch.log
+          body-path: /tmp/pr-body.md
           add-paths: corpus/
           delete-branch: true
+
+      # Χωρίς περίληψη, ένα run που δεν άνοιξε PR δεν λέει τίποτα: δεν ξεχωρίζει
+      # το «δεν άλλαξε ο νόμος» από το «δεν κατέβηκε τίποτα».
+      - name: Περίληψη εκτέλεσης
+        if: always()
+        run: |
+          {
+            echo "## Λήψη νομοθεσίας"
+            echo
+            case "${{ steps.fetch.outcome }}" in
+              success) echo "- Πηγές: όλες απάντησαν." ;;
+              failure) echo "- Πηγές: **τουλάχιστον μία απέτυχε.**" ;;
+              *)       echo "- Πηγές: η λήψη δεν έτρεξε καν." ;;
+            esac
+            case "${{ steps.diff.outputs.allages }}" in
+              nai)  echo "- Corpus: άλλαξε — άνοιξε pull request." ;;
+              ochi) echo "- Corpus: καμία αλλαγή, δεν ανοίγει pull request." ;;
+              *)    echo "- Corpus: δεν ελέγχθηκε." ;;
+            esac
+            echo
+            echo '```'
+            cat /tmp/fetch.log 2>/dev/null || echo "(δεν παρήχθη log)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Τελευταίο επίτηδες: το PR έχει ήδη ανοίξει για όσα πέτυχαν, και τώρα το
+      # run γίνεται κόκκινο ώστε η αποτυχία να φτάσει ως ειδοποίηση. Ένα πράσινο
+      # run χωρίς PR σημαίνει «δεν άλλαξε ο νόμος» — δεν πρέπει να σημαίνει
+      # ποτέ «δεν κατάφερα να δω τον νόμο».
+      - name: Αποτυχία αν κάποια πηγή δεν κατέβηκε
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          echo "::error::Η λήψη απέτυχε για μία ή περισσότερες πηγές. Δες την περίληψη του run."
+          exit 1
