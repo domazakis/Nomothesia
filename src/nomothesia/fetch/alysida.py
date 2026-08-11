@@ -110,16 +110,22 @@ def _einai_riza(cert: x509.Certificate) -> bool:
 def endiamesa_pistopoiitika(host: str, *, port: int = 443, timeout: float = 30.0) -> str:
     """Κατεβάζει τα ενδιάμεσα που λείπουν και τα επιστρέφει ως PEM.
 
-    Κενό αλφαριθμητικό σημαίνει ότι δεν βρέθηκε τίποτα προσθετέο — είτε ο
-    διακομιστής δεν δηλώνει εκδότη, είτε το μόνο που λείπει είναι ρίζα, που δεν
-    την προσθέτουμε ποτέ.
+    Αν δεν βρεθεί τίποτα προσθετέο, σηκώνει `SfalmaAlysidas` με τον λόγο: ο
+    διακομιστής δεν δηλώνει εκδότη, ή το μόνο που λείπει είναι ρίζα — που δεν
+    την προσθέτουμε ποτέ, οπότε το πρόβλημα βρίσκεται στο απόθεμα του
+    συστήματος και όχι εδώ.
     """
     cert = _pistopoiitiko_diakomisti(host, port, timeout)
     kommatia: list[str] = []
+    aitia = ""
 
     for _ in range(MEGISTO_VATHOS):
         url = _url_ekdoti(cert)
         if not url:
+            aitia = (
+                f"το πιστοποιητικό δεν δηλώνει από πού κατεβαίνει ο εκδότης του "
+                f"({cert.issuer.rfc4514_string()})"
+            )
             break
         try:
             apantisi = httpx.get(url, timeout=timeout, follow_redirects=True)
@@ -133,11 +139,21 @@ def endiamesa_pistopoiitika(host: str, *, port: int = 443, timeout: float = 30.0
         if _einai_riza(ekdotis):
             # Ρίζα: σταματάμε χωρίς να την προσθέσουμε. Εμπιστευόμαστε μόνο το
             # απόθεμα του συστήματος.
+            aitia = (
+                f"ο εκδότης είναι αυτο-υπογεγραμμένη ρίζα "
+                f"({ekdotis.subject.rfc4514_string()}) και δεν την προσθέτουμε — "
+                f"αν η σύνδεση εξακολουθεί να πέφτει, η ρίζα λείπει από το "
+                f"απόθεμα του συστήματος"
+            )
             break
 
         kommatia.append(ekdotis.public_bytes(Encoding.PEM).decode("ascii"))
         cert = ekdotis
 
+    if not kommatia:
+        # Σιωπηλή αποτυχία εδώ σημαίνει ότι το επόμενο άτομο ξαναρχίζει την
+        # έρευνα από το μηδέν. Ο λόγος λέγεται.
+        raise SfalmaAlysidas(aitia or "δεν βρέθηκε ενδιάμεσο προς προσθήκη")
     return "".join(kommatia)
 
 

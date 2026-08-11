@@ -152,7 +152,13 @@ def _apo_pigi(
 
     keimeno = kanonikopoiise(akatergasto)
     if not keimeno.strip():
-        raise SfalmaAgogou(f"δεν εξήχθη καθόλου κείμενο από {pigi.url}")
+        # Το μέγεθος ξεχωρίζει το «κατέβηκε σελίδα σφάλματος» από το «κατέβηκε ο
+        # νόμος και δεν ξέρουμε να τον διαβάσουμε». Χωρίς αυτό, τα δύο μοιάζουν.
+        raise SfalmaAgogou(
+            f"δεν εξήχθη καθόλου κείμενο από {pigi.url} "
+            f"({len(apotelesma.perieksomeno)} bytes, "
+            f"{apotelesma.typos_perieksomenou or 'άγνωστος τύπος'})"
+        )
 
     epalithevmeno = _epalithefse_fek(n, akatergasto)
     if n.fek and not epalithevmeno:
