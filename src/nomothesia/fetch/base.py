@@ -185,7 +185,24 @@ class Lipsi:
         self._teleftaio_aitima = time.monotonic()
 
     # ── δημόσιο API ──────────────────────────────────────────────────────
+    def _apo_disko(self, url: str) -> ApotelesmaLipsis:
+        """Διαβάζει πηγή που βρίσκεται μέσα στο repository (`file:…`)."""
+        diadromi = repo_riza() / url.removeprefix("file:").lstrip("/")
+        if not diadromi.is_file():
+            raise SfalmaLipsis(f"το αρχείο {diadromi} δεν υπάρχει")
+        perieksomeno = diadromi.read_bytes()
+        typos = "application/pdf" if diadromi.suffix == ".pdf" else "text/html"
+        return ApotelesmaLipsis(
+            perieksomeno=perieksomeno,
+            url=url,
+            apo_cache=True,
+            typos_perieksomenou=typos,
+        )
+
     def kateveste(self, url: str, *, agnoise_cache: bool = False) -> ApotelesmaLipsis:
+        if url.startswith("file:"):
+            return self._apo_disko(url)
+
         diadromi_dedomenon = self._diadromi_dedomenon(url)
         diadromi_meta = self._diadromi_meta(url)
 

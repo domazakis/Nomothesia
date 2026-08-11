@@ -26,8 +26,12 @@ PROTERAIOTITA_PIGON: dict[Typos, tuple[TyposPigis, ...]] = {
     Typos.KANONISMOS_EE: (TyposPigis.EURLEX_HTML,),
     Typos.ODIGIA_EE: (TyposPigis.EURLEX_HTML,),
 }
+# Το ζωντανό ΦΕΚ προηγείται του τοπικού αντιγράφου, ώστε η επίσημη πηγή να
+# ξαναδοκιμάζεται σε κάθε εκτέλεση και να επανέλθει μόνη της όταν διορθωθεί.
+# Το αντίγραφο έπεται αμέσως: είναι το ίδιο έγγραφο, όχι κωδικοποίηση τρίτου.
 PROTERAIOTITA_EX_ORISMOU = (
     TyposPigis.FEK_PDF,
+    TyposPigis.TOPIKO_FEK,
     TyposPigis.KODIKOPOIIMENO_HTML,
     TyposPigis.PDF_ALLI_PIGI,
 )
@@ -113,11 +117,7 @@ def epexergasou(
             continue
 
         if seira:
-            apotelesma.proeidopoiiseis.insert(
-                0,
-                f"η προτιμώμενη πηγή απέτυχε — το κείμενο προέρχεται από "
-                f"{pigi.typos.value} ({pigi.url})",
-            )
+            apotelesma.proeidopoiiseis.insert(0, _minima_ptosis(pigi))
         return apotelesma
 
     if len(apotyxies) == 1:
@@ -126,6 +126,24 @@ def epexergasou(
     raise SfalmaAgogou(
         f"{n.id}: καμία από τις {len(apotyxies)} πηγές δεν απέδωσε κείμενο — "
         f"{perigrafes}"
+    )
+
+
+def _minima_ptosis(pigi) -> str:
+    """Τι σημαίνει για τον αναγνώστη ότι χρησιμοποιήθηκε εναλλακτική πηγή.
+
+    Το τοπικό αντίγραφο ΦΕΚ ξεχωρίζει: το κείμενο εξακολουθεί να είναι το
+    επίσημο, απλώς δεν κατέβηκε τώρα. Μια κωδικοποίηση τρίτου είναι άλλο
+    πράγμα και δεν πρέπει να τα μπερδεύει κανείς.
+    """
+    if pigi.typos is TyposPigis.TOPIKO_FEK:
+        return (
+            "το et.gr δεν απάντησε — το κείμενο προέρχεται από το αντίγραφο "
+            f"ΦΕΚ του repository ({pigi.url}), που είναι το ίδιο έγγραφο"
+        )
+    return (
+        f"η προτιμώμενη πηγή απέτυχε — το κείμενο προέρχεται από "
+        f"{pigi.typos.value} ({pigi.url})"
     )
 
 

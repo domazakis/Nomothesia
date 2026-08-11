@@ -90,3 +90,63 @@ def test_thoryvos_selidas_den_mpainei_sto_keimeno(arthra):
 
 def test_keimeno_xoris_arthra_epistrefei_kena():
     assert analyse_domi("Απλό κείμενο χωρίς καμία δομή άρθρων.") == []
+
+
+# ── Τίτλοι που σπάνε σε δεύτερη σειρά ────────────────────────────────────
+#
+# Στο ΦΕΚ ο τίτλος τυπώνεται κεντραρισμένος και σπάει όπου δεν χωράει. Παίρνοντας
+# μόνο την πρώτη σειρά, ο μισός τίτλος κατέληγε στο σώμα ως παράγραφος: στον ΚΟΚ
+# του 2025 συνέβαινε σε 22 από τα 132 άρθρα, και το άρθρο για το αλκοόλ φαινόταν
+# να λέει «φαρμάκων ή τοξικών ουσιών».
+
+
+def test_titlos_se_dyo_seires_enonetai():
+    keimeno = (
+        "Άρθρο 46\n"
+        "Οδήγηση υπό την επίδραση οινοπνεύματος,\n"
+        "φαρμάκων ή τοξικών ουσιών\n"
+        "1. Απαγορεύεται η οδήγηση κάθε οδικού οχήματος.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos == "Οδήγηση υπό την επίδραση οινοπνεύματος, φαρμάκων ή τοξικών ουσιών"
+    assert arthro.paragrafoi[0].arithmos == "1"
+
+
+def test_i_synecheia_tou_titlou_den_ginetai_paragrafos():
+    keimeno = "Άρθρο 14\nΕγκατάσταση μέσων σήμανσης\nκαι σηματοδότησης\n1. Η αρχή αποφασίζει.\n"
+    (arthro,) = analyse_domi(keimeno)
+    assert len(arthro.paragrafoi) == 1
+    assert "σηματοδότησης" not in arthro.paragrafoi[0].keimeno
+
+
+def test_to_enotiko_diloni_synecheia_akoma_kai_me_kefalaio():
+    keimeno = (
+        "Άρθρο 98\n"
+        "Άδειες οδήγησης - Κυρώσεις -\n"
+        "Άδειες εκπαιδευτών υποψήφιων οδηγών\n"
+        "1. Ισχύουν τα εξής.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos.endswith("Άδειες εκπαιδευτών υποψήφιων οδηγών")
+
+
+def test_protasi_somatos_den_prosartatai_ston_titlo():
+    """Το κεφαλαίο αρχικό προστατεύει το σώμα των άρθρων χωρίς αρίθμηση."""
+    keimeno = "Άρθρο 1\nΣκοπός\nΣκοπός του παρόντος είναι η ρύθμιση της κυκλοφορίας.\n"
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos == "Σκοπός"
+    assert arthro.paragrafoi[0].keimeno.startswith("Σκοπός του παρόντος")
+
+
+def test_titlos_enotitas_se_dyo_seires_enonetai():
+    keimeno = (
+        "ΜΕΡΟΣ Β΄\n"
+        "ΣΗΜΑΝΣΗ - ΣΗΜΑΤΟΔΟΤΗΣΗ -\n"
+        "ΟΔΙΚΗ ΣΥΜΠΕΡΙΦΟΡΑ\n"
+        "Άρθρο 6\n"
+        "Τροχονόμοι\n"
+        "1. Ρυθμίζουν την κυκλοφορία.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.meros.titlos == "ΣΗΜΑΝΣΗ - ΣΗΜΑΤΟΔΟΤΗΣΗ - ΟΔΙΚΗ ΣΥΜΠΕΡΙΦΟΡΑ"
+    assert arthro.titlos == "Τροχονόμοι"

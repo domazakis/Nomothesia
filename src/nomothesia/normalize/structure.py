@@ -45,6 +45,13 @@ ARTHRO = re.compile(
 # «1.» ή «12.» στην αρχή γραμμής — αρχή παραγράφου
 PARAGRAFOS = re.compile(r"^\s*(\d{1,3})\.\s+", re.MULTILINE)
 
+# Οι τίτλοι σπάνε το πολύ σε πέντε σειρές· πέρα από αυτό διαβάζουμε σώμα.
+MEGISTES_GRAMMES_TITLOU = 5
+
+# Γραμμή τίτλου που τελειώνει έτσι δεν έχει τελειώσει: το ενωτικό χωρίζει τα
+# σκέλη ενός σύνθετου τίτλου («… - Αντικατάσταση παρ. 3 άρθρου 12»).
+SYNECHIZEI = ("-", ",", "—", "–")
+
 
 @dataclass
 class Paragrafos:
@@ -119,19 +126,70 @@ def _spase_se_paragrafous(soma: str) -> list[Paragrafos]:
 
 
 def _titlos_meta_apo(keimeno: str, thesi: int) -> str:
-    """Η πρώτη μη κενή γραμμή μετά τη θέση `thesi` — ο τίτλος μιας ενότητας.
+    """Ο τίτλος μιας ενότητας: οι γραμμές μέχρι τον επόμενο δομικό δείκτη.
 
-    Σταματά αν συναντήσει άλλον δομικό δείκτη, ώστε ένα «ΜΕΡΟΣ Α΄» αμέσως
-    πριν από «Άρθρο 1» να μην κλέψει τον τίτλο του άρθρου.
+    Οι τίτλοι Μέρους και Κεφαλαίου τυπώνονται κεντραρισμένοι και σπάνε σε
+    δεύτερη σειρά όταν δεν χωρούν — «ΣΗΜΑΝΣΗ - ΣΗΜΑΤΟΔΟΤΗΣΗ - / ΟΔΙΚΗ
+    ΣΥΜΠΕΡΙΦΟΡΑ». Ανάμεσα σε δύο δομικούς δείκτες δεν υπάρχει τίποτε άλλο
+    πέρα από τον τίτλο, οπότε τις ενώνουμε όλες.
     """
-    for grammi in keimeno[thesi:].split("\n")[:3]:
+    grammes: list[str] = []
+    for grammi in keimeno[thesi:].split("\n")[: MEGISTES_GRAMMES_TITLOU + 1]:
         katharh = grammi.strip()
         if not katharh:
             continue
         if MEROS.match(katharh) or KEFALAIO.match(katharh) or ARTHRO.match(katharh):
-            return ""
-        return katharh
-    return ""
+            break
+        grammes.append(katharh)
+    return _enose_titlo(grammes)
+
+
+def _enose_titlo(grammes: list[str]) -> str:
+    """Ενώνει τις γραμμές ενός τίτλου, χωρίς να διπλογράψει το ενωτικό."""
+    titlos = ""
+    for grammi in grammes:
+        if not titlos:
+            titlos = grammi
+        elif titlos.endswith("-"):
+            titlos = f"{titlos} {grammi}"
+        else:
+            titlos = f"{titlos} {grammi}"
+    return titlos.strip()
+
+
+def _titlos_arthrou(grammes: list[str]) -> int:
+    """Πόσες από τις πρώτες γραμμές του άρθρου αποτελούν τον τίτλο του.
+
+    Ο τίτλος τυπώνεται κεντραρισμένος και σπάει σε δεύτερη σειρά όταν δεν
+    χωράει: «Οδήγηση υπό την επίδραση οινοπνεύματος, / φαρμάκων ή τοξικών
+    ουσιών». Παίρνοντας μόνο την πρώτη γραμμή, ο μισός τίτλος κατέληγε στο
+    σώμα του άρθρου ως παράγραφος — και το άρθρο για το αλκοόλ έδειχνε να
+    λέει «φαρμάκων ή τοξικών ουσιών».
+
+    Δύο ενδείξεις συνέχειας, και οι δύο συντηρητικές. Το **πεζό αρχικό
+    γράμμα**: μια πρόταση του σώματος ξεκινά με κεφαλαίο ή με αριθμό
+    παραγράφου, ενώ η συνέχεια ενός τίτλου συνεχίζει τη φράση. Και το
+    **ενωτικό στο τέλος** της προηγούμενης γραμμής, που στους σύνθετους
+    τίτλους των ΦΕΚ χωρίζει τα σκέλη («… - Αντικατάσταση παρ. 3»).
+
+    Όταν ο τίτλος συνεχίζεται με κεφαλαίο χωρίς κανένα από τα δύο —συνήθως
+    ορισμένος όρος όπως «Ελαφρών Προσωπικών / Ηλεκτρικών Οχημάτων»— μένει
+    κομμένος. Δεν ξεχωρίζει με ασφάλεια από αρχή πρότασης, και προτιμότερο
+    είναι ένας κολοβός τίτλος από ένα άρθρο που έχασε την πρώτη του πρόταση.
+    """
+    if not grammes or not grammes[0].strip() or PARAGRAFOS.match(grammes[0]):
+        return 0
+
+    plithos = 1
+    for grammi in grammes[1:MEGISTES_GRAMMES_TITLOU]:
+        katharh = grammi.strip()
+        if not katharh or PARAGRAFOS.match(katharh):
+            break
+        proigoumeni = grammes[plithos - 1].strip()
+        if not (katharh[0].islower() or proigoumeni.endswith(SYNECHIZEI)):
+            break
+        plithos += 1
+    return plithos
 
 
 def analyse_domi(keimeno: str) -> list[Arthro]:
@@ -172,13 +230,11 @@ def analyse_domi(keimeno: str) -> list[Arthro]:
 
         soma = keimeno[telos_deikti:epomeni_arxi]
 
-        # Ο τίτλος του άρθρου είναι η πρώτη μη κενή γραμμή, εφόσον δεν είναι
-        # ήδη αριθμημένη παράγραφος.
-        titlos = ""
         grammes = soma.strip().split("\n")
-        if grammes and grammes[0].strip() and not PARAGRAFOS.match(grammes[0]):
-            titlos = grammes[0].strip()
-            soma = "\n".join(grammes[1:])
+        plithos_titlou = _titlos_arthrou(grammes)
+        titlos = _enose_titlo([g.strip() for g in grammes[:plithos_titlou]])
+        if plithos_titlou:
+            soma = "\n".join(grammes[plithos_titlou:])
 
         arthra.append(
             Arthro(

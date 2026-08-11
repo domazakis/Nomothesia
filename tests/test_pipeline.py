@@ -127,9 +127,33 @@ def test_agogos_pefti_stin_epomeni_pigi_otan_i_proti_apotygchanei(kok, deigma, t
     assert apotelesma.plithos_arthron == 4
 
 
-def test_i_ptosi_se_alli_pigi_dilonetai(kok, deigma):
-    """Το κείμενο δεν προέρχεται από το ΦΕΚ — αυτό δεν πρέπει να περάσει σιωπηλά."""
+def test_i_ptosi_sto_topiko_fek_dilonetai_os_idio_eggrafo(kok, deigma):
+    """Το τοπικό αντίγραφο είναι το ίδιο ΦΕΚ — δεν πρέπει να μοιάζει υποβάθμιση."""
     apotelesma = epexergasou(kok, NekriPigi(deigma, nekro="et.gr"))
+    proeidopoiisi = apotelesma.proeidopoiiseis[0]
+    assert "ίδιο έγγραφο" in proeidopoiisi
+    assert "sources/fek/" in proeidopoiisi
+
+
+def test_i_ptosi_se_kodikopoiisi_tritou_dilonetai_os_alli_pigi(kok, deigma):
+    """Μια κωδικοποίηση τρίτου είναι άλλο πράγμα και πρέπει να ξεχωρίζει.
+
+    Πέφτουν και το ΦΕΚ και το τοπικό του αντίγραφο· μένει η έκδοση τρίτου.
+    """
+
+    class DyoNekres(PsevdiLipsi):
+        def kateveste(self, url: str, *, agnoise_cache: bool = False):
+            self.aitimata.append(url)
+            if "et.gr" in url or url.startswith("file:"):
+                raise SfalmaLipsis(f"απέτυχε η λήψη του {url}")
+            return ApotelesmaLipsis(
+                perieksomeno=self.perieksomeno,
+                url=url,
+                apo_cache=False,
+                typos_perieksomenou="text/html",
+            )
+
+    apotelesma = epexergasou(kok, DyoNekres(deigma))
     assert any("προτιμώμενη πηγή απέτυχε" in p for p in apotelesma.proeidopoiiseis)
 
 

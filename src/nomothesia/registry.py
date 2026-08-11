@@ -52,6 +52,9 @@ class TyposPigis(StrEnum):
     KODIKOPOIIMENO_HTML = "kodikopoiimeno_html"
     EURLEX_HTML = "eurlex_html"
     PDF_ALLI_PIGI = "pdf_alli_pigi"
+    # Αντίγραφο ΦΕΚ μέσα στο repository, για όταν η επίσημη πηγή είναι
+    # απρόσιτη. Δες sources/fek/README.md.
+    TOPIKO_FEK = "topiko_fek"
 
 
 class Fek(BaseModel):
