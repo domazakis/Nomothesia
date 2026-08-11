@@ -1,0 +1,469 @@
+# Μητρώο πηγών — ελληνική νομοθεσία για την οδήγηση οχημάτων
+#
+# Αυτό το αρχείο είναι η μοναδική πηγή αλήθειας του project. Ο κώδικας δεν έχει
+# hardcoded URLs ή αριθμούς ΦΕΚ· όλα ζουν εδώ.
+#
+# ΣΗΜΑΝΤΙΚΟ — το πεδίο `epalithevmeno`:
+#   false = τα στοιχεία ΦΕΚ προέρχονται από δευτερογενείς πηγές και ΔΕΝ έχουν
+#           ακόμη αντιπαραβληθεί με το επίσημο ΦΕΚ του Εθνικού Τυπογραφείου.
+#   true  = το `nomothesia fetch` κατέβασε το ΦΕΚ και επιβεβαίωσε ότι η κεφαλίδα
+#           του συμφωνεί με τα στοιχεία της εγγραφής.
+# Όσο μια εγγραφή είναι `false`, μην τη θεωρείς αυθεντική.
+
+meta:
+  ekdosi: 1
+  enimerosi: 2026-08-11
+  perigrafi: >-
+    Νομοθεσία που αφορά την οδήγηση οχημάτων στην Ελλάδα: κώδικας οδικής
+    κυκλοφορίας, άδειες οδήγησης, εκπαίδευση οδηγών, τεχνικός έλεγχος,
+    ασφάλιση, επαγγελματική οδήγηση και σχετικό ενωσιακό δίκαιο.
+
+nomothetimata:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ΘΕΜΑΤΙΚΗ: ΚΩΔΙΚΑΣ ΟΔΙΚΗΣ ΚΥΚΛΟΦΟΡΙΑΣ
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - id: kok-5209-2025
+    titlos: Κώδικας Οδικής Κυκλοφορίας και άλλες διατάξεις
+    syntomos_titlos: ΚΟΚ (ισχύων)
+    typos: nomos
+    arithmos: "5209"
+    etos: 2025
+    fek: {teuxos: A, arithmos: 100, imerominia: 2025-06-13}
+    thematiki: kok
+    proteraiotita: 1
+    katastasi: isxyon
+    isxys_apo: 2025-09-13
+    epalithevmeno: false
+    perigrafi: >-
+      Ο ισχύων Κώδικας Οδικής Κυκλοφορίας. Καλύπτει κανόνες κυκλοφορίας,
+      σήμανση και σηματοδότηση, όρια ταχύτητας, συμπεριφορά οδηγών και πεζών,
+      ταξινόμηση και θέση οχημάτων σε κυκλοφορία, ικανότητα οδήγησης και
+      έγγραφα απόδειξής της, καθώς και το σύστημα κυρώσεων και σημείων ποινής.
+    scheseis:
+      antikathista: [kok-2696-1999]
+      tropopoieitai_apo: [nomos-5322-2026]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20250100100"}
+      - {typos: kodikopoiimeno_html, url: "https://www.kodiko.gr/nomothesia/document/1181157/nomos-5209-2025"}
+    simeioseis: >-
+      Δημοσιεύθηκε 13-6-2025. Τα Μέρη Α΄ έως Δ΄ τέθηκαν σε ισχύ τρεις μήνες
+      μετά τη δημοσίευση, δηλαδή 13-9-2025, με εξαίρεση τις διατάξεις της
+      παρ. 2 του άρθρου 132, οι παραβάσεις των οποίων ισχύουν από 13-6-2025.
+      Η ημερομηνία έναρξης ισχύος διαφέρει ανά Μέρος — προσοχή σε ερωτήσεις
+      που αφορούν συμβάντα του καλοκαιριού 2025.
+
+  - id: nomos-5322-2026
+    titlos: >-
+      Προσωπικός Βοηθός, Πρώιμη Παρέμβαση και λοιπές ενεργητικές πολιτικές για
+      άτομα με αναπηρία, ρυθμίσεις στεγαστικής πολιτικής και άλλες διατάξεις
+    syntomos_titlos: Τροποποιήσεις ΚΟΚ για Ε.Π.Η.Ο.
+    typos: nomos
+    arithmos: "5322"
+    etos: 2026
+    fek: {teuxos: A, arithmos: 117, imerominia: 2026-07-24}
+    thematiki: kok
+    proteraiotita: 1
+    katastasi: isxyon
+    isxys_apo: 2026-07-24
+    epalithevmeno: false
+    perigrafi: >-
+      Νόμος γενικού περιεχομένου του οποίου τα άρθρα 73-81 τροποποιούν το
+      πλαίσιο για τα Ελαφρά Προσωπικά Ηλεκτρικά Οχήματα (Ε.Π.Η.Ο.), με στόχο
+      την οδική ασφάλεια και την προστασία τρίτων.
+    relevanta_arthra: [73, 74, 75, 76, 77, 78, 79, 80, 81]
+    scheseis:
+      tropopoiei: [kok-5209-2025]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20260100117"}
+    simeioseis: >-
+      Μόνο τα άρθρα 73-81 αφορούν την οδήγηση. Ο fetcher κατεβάζει ολόκληρο το
+      ΦΕΚ αλλά η εξαγωγή περιορίζεται στα άρθρα του `relevanta_arthra`.
+
+  - id: kok-2696-1999
+    titlos: Κύρωση του Κώδικα Οδικής Κυκλοφορίας
+    syntomos_titlos: ΚΟΚ (παλαιός)
+    typos: nomos
+    arithmos: "2696"
+    etos: 1999
+    fek: {teuxos: A, arithmos: 57, imerominia: 1999-03-23}
+    thematiki: kok
+    proteraiotita: 3
+    katastasi: istoriko
+    epalithevmeno: false
+    perigrafi: >-
+      Ο προηγούμενος Κώδικας Οδικής Κυκλοφορίας, που ίσχυσε επί 26 χρόνια.
+      Διατηρείται για ιστορικούς και μεταβατικούς λόγους: παραβάσεις που
+      τελέστηκαν πριν τις 13-9-2025 κρίνονται κατά κανόνα με βάση αυτόν.
+    scheseis:
+      antikatastathike_apo: [kok-5209-2025]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19990100057"}
+      - {typos: kodikopoiimeno_html, url: "https://www.kodiko.gr/nomothesia/document/46357/nomos-2696-1999"}
+    simeioseis: >-
+      ΠΡΟΣΟΧΗ: δεν είναι το ισχύον δίκαιο. Κάθε απάντηση που στηρίζεται σε αυτόν
+      πρέπει να το δηλώνει ρητά.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ΘΕΜΑΤΙΚΗ: ΑΔΕΙΕΣ ΟΔΗΓΗΣΗΣ ΚΑΙ ΕΚΠΑΙΔΕΥΣΗ
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - id: pd-51-2012
+    titlos: >-
+      Προσαρμογή της ελληνικής νομοθεσίας προς την Οδηγία 2006/126/ΕΚ του
+      Ευρωπαϊκού Κοινοβουλίου και του Συμβουλίου, για την άδεια οδήγησης
+    syntomos_titlos: Άδειες οδήγησης — κατηγορίες
+    typos: pd
+    arithmos: "51"
+    etos: 2012
+    fek: {teuxos: A, arithmos: 101, imerominia: 2012-04-27}
+    thematiki: adeies-odigisis
+    proteraiotita: 1
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Ορίζει τις κατηγορίες αδειών οδήγησης (ΑΜ, Α1, Α2, Α, Β1, Β, ΒΕ, Γ1, Γ,
+      Δ1, Δ κ.λπ.), τις ελάχιστες ηλικίες, τη διάρκεια ισχύος, την αμοιβαία
+      αναγνώριση εντός ΕΕ και τις προϋποθέσεις χορήγησης.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20120100101"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/adeies-odegeses/pd-51-2012.html"}
+    simeioseis: >-
+      Ο αριθμός ΦΕΚ χρειάζεται επιβεβαίωση: δευτερογενείς πηγές αναφέρουν τόσο
+      Α΄101 όσο και Α΄51 για την ίδια ημερομηνία (27-4-2012). Η ένδειξη Α΄51
+      πιθανότατα συγχέει τον αριθμό του Π.Δ. με τον αριθμό του ΦΕΚ.
+
+  - id: ya-50984-2013
+    titlos: >-
+      Άδειες οδήγησης — χορήγηση, ανανέωση, αντικατάσταση και ανταλλαγή, καθώς
+      και εκπαίδευση και εξέταση υποψηφίων οδηγών
+    syntomos_titlos: Διαδικασία αδειών και εξετάσεις
+    typos: ya
+    arithmos: "Α3/οικ.50984/7947"
+    etos: 2013
+    fek: {teuxos: B, arithmos: 3056, imerominia: 2013-12-02}
+    thematiki: adeies-odigisis
+    proteraiotita: 1
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Η πρακτική διαδικασία: δικαιολογητικά, ιατρικές εξετάσεις, θεωρητική
+      εξέταση (σήματα, κανόνες), δοκιμασία προσόντων και συμπεριφοράς, ύλη
+      εκπαίδευσης, αριθμός υποχρεωτικών μαθημάτων. Το πλησιέστερο νομοθέτημα
+      στο βιβλίο των σχολών οδηγών.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20130203056"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/adeies-odegeses/ya-a3-oik-50984-7947-2013.html"}
+    simeioseis: >-
+      Τροποποιείται συχνά. Κατά την έρευνα (Αύγουστος 2026) η τελευταία
+      κωδικοποιημένη έκδοση έφερε ημερομηνία 9-11-2025. Υψηλή προτεραιότητα
+      στον εβδομαδιαίο έλεγχο αλλαγών.
+
+  - id: pd-74-2008
+    titlos: >-
+      Προσαρμογή της ελληνικής νομοθεσίας προς την Οδηγία 2003/59/ΕΚ, σχετικά
+      με την αρχική επιμόρφωση και την περιοδική κατάρτιση των οδηγών
+    syntomos_titlos: Σχολές οδηγών και Π.Ε.Ι.
+    typos: pd
+    arithmos: "74"
+    etos: 2008
+    fek: {teuxos: A, arithmos: 112, imerominia: 2008-06-18}
+    thematiki: adeies-odigisis
+    proteraiotita: 2
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Πιστοποιητικό Επαγγελματικής Ικανότητας (Π.Ε.Ι.) για οδηγούς φορτηγών και
+      λεωφορείων: αρχική επιμόρφωση, περιοδική κατάρτιση, σχολές, εξετάσεις.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20080100112"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/sxoles-odegon/pd-74-2008.html"}
+    simeioseis: Τροποποιήθηκε μεταξύ άλλων με το άρθρο 63 του ν. 4530/2018.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ΘΕΜΑΤΙΚΗ: ΟΧΗΜΑΤΑ — ΤΕΧΝΙΚΟΣ ΕΛΕΓΧΟΣ ΚΑΙ ΚΑΤΗΓΟΡΙΕΣ
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - id: nomos-1350-1983
+    titlos: Υποχρεωτικός τεχνικός έλεγχος των οδικών οχημάτων και άλλες διατάξεις
+    syntomos_titlos: ΚΤΕΟ — θεσμικό πλαίσιο
+    typos: nomos
+    arithmos: "1350"
+    etos: 1983
+    fek: {teuxos: A, arithmos: 55, imerominia: 1983-04-26}
+    thematiki: ochimata
+    proteraiotita: 2
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Καθιέρωσε τον υποχρεωτικό τεχνικό έλεγχο οχημάτων και τα Κέντρα Τεχνικού
+      Ελέγχου Οχημάτων. Βάση για τα δημόσια και (από το 2001) τα ιδιωτικά ΚΤΕΟ.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19830100055"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/tekhnikos-elegkhos-kteo/n-1350-1983.html"}
+
+  - id: ya-19111-2019
+    titlos: >-
+      Καθορισμός τρόπου, διαδικασίας και πιστοποίησης διενέργειας του Τεχνικού
+      Ελέγχου (περιοδικού, έκτακτου, εκουσίου) των οχημάτων στα Δημόσια και
+      Ιδιωτικά Κέντρα Τεχνικού Ελέγχου Οχημάτων (ΚΤΕΟ)
+    syntomos_titlos: ΚΤΕΟ — διαδικασία ελέγχου
+    typos: ya
+    arithmos: "οικ.19111/192"
+    etos: 2019
+    fek: {teuxos: B, arithmos: 1003, imerominia: 2019-03-26}
+    thematiki: ochimata
+    proteraiotita: 2
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Πότε ελέγχεται κάθε κατηγορία οχήματος, τι ελέγχεται, κατηγορίες
+      ελλείψεων, δελτίο τεχνικού ελέγχου, επανέλεγχος, πρόστιμα εκπρόθεσμου.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20190201003"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/tekhnikos-elegkhos-kteo/upourgike-apophase-oik-19111-192-2019.html"}
+    simeioseis: >-
+      Ενσωματώνει την Οδηγία 2014/45/ΕΕ. Αναγνωρίζει πιστοποιητικά τεχνικού
+      ελέγχου άλλων κρατών μελών κατά την ταξινόμηση μεταχειρισμένου οχήματος.
+
+  - id: nomos-4784-2021
+    titlos: Η Ελλάδα σε κίνηση — Βιώσιμη Αστική Κινητικότητα, μικροκινητικότητα και άλλες διατάξεις
+    syntomos_titlos: Μικροκινητικότητα και Ε.Π.Η.Ο.
+    typos: nomos
+    arithmos: "4784"
+    etos: 2021
+    fek: {teuxos: A, arithmos: 40, imerominia: 2021-03-16}
+    thematiki: ochimata
+    proteraiotita: 2
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Εισήγαγε το πλαίσιο για τα Ελαφρά Προσωπικά Ηλεκτρικά Οχήματα (πατίνια
+      κ.λπ.): ορισμοί, πού επιτρέπεται η κυκλοφορία, εξοπλισμός, κυρώσεις.
+    scheseis:
+      tropopoieitai_apo: [nomos-5322-2026]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20210100040"}
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ΘΕΜΑΤΙΚΗ: ΑΣΦΑΛΙΣΗ ΚΑΙ ΤΕΛΗ
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - id: pd-237-1986
+    titlos: >-
+      Κωδικοποίηση των διατάξεων του ν. 489/1976 περί υποχρεωτικής ασφαλίσεως
+      της εξ ατυχημάτων αυτοκινήτων αστικής ευθύνης
+    syntomos_titlos: Υποχρεωτική ασφάλιση οχημάτων
+    typos: pd
+    arithmos: "237"
+    etos: 1986
+    fek: {teuxos: A, arithmos: 110, imerominia: 1986-07-18}
+    thematiki: asfalisi
+    proteraiotita: 2
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Η υποχρέωση ασφάλισης αστικής ευθύνης, τα ελάχιστα ποσά κάλυψης, το
+      Επικουρικό Κεφάλαιο, ο εντοπισμός ανασφάλιστων οχημάτων και οι κυρώσεις.
+    scheseis:
+      kodikopoiei: [nomos-489-1976]
+      tropopoieitai_apo: [nomos-5113-2024]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19860100110"}
+
+  - id: nomos-489-1976
+    titlos: Περί υποχρεωτικής ασφαλίσεως της εξ ατυχημάτων αυτοκινήτων αστικής ευθύνης
+    typos: nomos
+    arithmos: "489"
+    etos: 1976
+    fek: {teuxos: A, arithmos: 331, imerominia: 1976-12-08}
+    thematiki: asfalisi
+    proteraiotita: 3
+    katastasi: istoriko
+    epalithevmeno: false
+    perigrafi: Ο αρχικός νόμος, ο οποίος κωδικοποιήθηκε με το π.δ. 237/1986.
+    scheseis:
+      kodikopoiithike_apo: [pd-237-1986]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19760100331"}
+      - {typos: pdf_alli_pigi, url: "https://www.bankofgreece.gr/RelatedDocuments/law489gr.pdf"}
+
+  - id: nomos-5113-2024
+    titlos: Ενσωμάτωση της Οδηγίας (ΕΕ) 2021/2118 και ρυθμίσεις για τα ανασφάλιστα οχήματα
+    syntomos_titlos: Ανασφάλιστα οχήματα
+    typos: nomos
+    arithmos: "5113"
+    etos: 2024
+    fek: {teuxos: A, arithmos: 96, imerominia: 2024-06-21}
+    thematiki: asfalisi
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Επικαιροποίηση του π.δ. 237/1986 βάσει της Οδηγίας (ΕΕ) 2021/2118·
+      διασταυρώσεις για εντοπισμό ανασφάλιστων οχημάτων και πρόστιμα.
+    scheseis:
+      tropopoiei: [pd-237-1986]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20240100096"}
+
+  - id: nomos-2960-2001
+    titlos: Εθνικός Τελωνειακός Κώδικας
+    syntomos_titlos: Τέλη κυκλοφορίας και ταξινόμησης
+    typos: nomos
+    arithmos: "2960"
+    etos: 2001
+    fek: {teuxos: A, arithmos: 265, imerominia: 2001-11-22}
+    thematiki: teli
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Τέλος ταξινόμησης οχημάτων και συναφείς φορολογικές διατάξεις. Μόνο τα
+      άρθρα που αφορούν οχήματα είναι σχετικά.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20010100265"}
+    simeioseis: >-
+      Πολύ μεγάλος νόμος γενικού τελωνειακού περιεχομένου. Χρειάζεται φιλτράρισμα
+      στα σχετικά κεφάλαια πριν μπει στο corpus.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ΘΕΜΑΤΙΚΗ: ΕΠΑΓΓΕΛΜΑΤΙΚΗ ΟΔΗΓΗΣΗ
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - id: nomos-4070-2012
+    titlos: >-
+      Ρυθμίσεις Ηλεκτρονικών Επικοινωνιών, Μεταφορών, Δημοσίων Έργων και άλλες
+      διατάξεις
+    syntomos_titlos: Ε.Δ.Χ. — ταξί
+    typos: nomos
+    arithmos: "4070"
+    etos: 2012
+    fek: {teuxos: A, arithmos: 82, imerominia: 2012-04-10}
+    thematiki: epaggelmatiki-odigisi
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Επιβατηγά Δημόσιας Χρήσης οχήματα (ταξί και ΕΙΧ με οδηγό): άδειες,
+      προϋποθέσεις οδηγών, όροι λειτουργίας.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20120100082"}
+
+  - id: nomos-3446-2006
+    titlos: >-
+      Οργάνωση και λειτουργία αρχών ελέγχου κυκλοφορίας των οχημάτων —
+      Ρυθμίσεις για τις επιβατικές μεταφορές
+    syntomos_titlos: Έλεγχοι οδικών μεταφορών
+    typos: nomos
+    arithmos: "3446"
+    etos: 2006
+    fek: {teuxos: A, arithmos: 49, imerominia: 2006-03-10}
+    thematiki: epaggelmatiki-odigisi
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Μικτά Κλιμάκια Ελέγχου, έλεγχος βάρους και διαστάσεων, κυρώσεις για
+      παραβάσεις οδικών εμπορευματικών μεταφορών.
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20060100049"}
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ΘΕΜΑΤΙΚΗ: ΕΝΩΣΙΑΚΟ ΔΙΚΑΙΟ
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - id: kanonismos-561-2006
+    titlos: >-
+      Κανονισμός (ΕΚ) αριθ. 561/2006 για την εναρμόνιση ορισμένων κοινωνικών
+      διατάξεων στον τομέα των οδικών μεταφορών
+    syntomos_titlos: Χρόνοι οδήγησης και ανάπαυσης
+    typos: kanonismos_ee
+    arithmos: "561/2006"
+    etos: 2006
+    celex: "32006R0561"
+    thematiki: enosiako
+    proteraiotita: 2
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Ημερήσιος και εβδομαδιαίος χρόνος οδήγησης, διαλείμματα, περίοδοι
+      ανάπαυσης για οδηγούς φορτηγών και λεωφορείων. Ισχύει άμεσα, χωρίς
+      ενσωμάτωση. Κανονική εβδομαδιαία ανάπαυση: τουλάχιστον 45 ώρες.
+    piges:
+      - {typos: eurlex_html, url: "https://eur-lex.europa.eu/legal-content/EL/TXT/HTML/?uri=CELEX:32006R0561"}
+
+  - id: kanonismos-165-2014
+    titlos: Κανονισμός (ΕΕ) αριθ. 165/2014 για τους ταχογράφους στον τομέα των οδικών μεταφορών
+    syntomos_titlos: Ταχογράφοι
+    typos: kanonismos_ee
+    arithmos: "165/2014"
+    etos: 2014
+    celex: "32014R0165"
+    thematiki: enosiako
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Υποχρέωση, τύποι και χρήση ταχογράφου· κάρτες οδηγού· καταγραφή χρόνων
+      εργασίας και ελέγχων.
+    piges:
+      - {typos: eurlex_html, url: "https://eur-lex.europa.eu/legal-content/EL/TXT/HTML/?uri=CELEX:32014R0165"}
+
+  - id: odigia-2006-126
+    titlos: Οδηγία 2006/126/ΕΚ για την άδεια οδήγησης
+    syntomos_titlos: Ενωσιακό πλαίσιο αδειών οδήγησης
+    typos: odigia_ee
+    arithmos: "2006/126/ΕΚ"
+    etos: 2006
+    celex: "32006L0126"
+    thematiki: enosiako
+    proteraiotita: 2
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Το ενωσιακό υπόβαθρο των κατηγοριών αδειών οδήγησης και της αμοιβαίας
+      αναγνώρισης. Ενσωματώθηκε στην Ελλάδα με το π.δ. 51/2012.
+    scheseis:
+      ensomatothike_me: [pd-51-2012]
+    piges:
+      - {typos: eurlex_html, url: "https://eur-lex.europa.eu/legal-content/EL/TXT/HTML/?uri=CELEX:32006L0126"}
+
+  - id: odigia-2014-45
+    titlos: >-
+      Οδηγία 2014/45/ΕΕ για τον περιοδικό τεχνικό έλεγχο των μηχανοκίνητων
+      οχημάτων και των ρυμουλκουμένων τους
+    syntomos_titlos: Ενωσιακό πλαίσιο τεχνικού ελέγχου
+    typos: odigia_ee
+    arithmos: "2014/45/ΕΕ"
+    etos: 2014
+    celex: "32014L0045"
+    thematiki: enosiako
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: Συχνότητα και περιεχόμενο του περιοδικού τεχνικού ελέγχου σε επίπεδο ΕΕ.
+    scheseis:
+      ensomatothike_me: [ya-19111-2019]
+    piges:
+      - {typos: eurlex_html, url: "https://eur-lex.europa.eu/legal-content/EL/TXT/HTML/?uri=CELEX:32014L0045"}
+
+  - id: odigia-2021-2118
+    titlos: >-
+      Οδηγία (ΕΕ) 2021/2118 για την ασφάλιση της αστικής ευθύνης που προκύπτει
+      από την κυκλοφορία αυτοκινήτων οχημάτων
+    syntomos_titlos: Ενωσιακό πλαίσιο ασφάλισης οχημάτων
+    typos: odigia_ee
+    arithmos: "2021/2118"
+    etos: 2021
+    celex: "32021L2118"
+    thematiki: enosiako
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: Επικαιροποίηση του ενωσιακού πλαισίου υποχρεωτικής ασφάλισης οχημάτων.
+    scheseis:
+      ensomatothike_me: [nomos-5113-2024]
+    piges:
+      - {typos: eurlex_html, url: "https://eur-lex.europa.eu/legal-content/EL/TXT/HTML/?uri=CELEX:32021L2118"}

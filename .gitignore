@@ -1,0 +1,26 @@
+# Το βιβλίο σχολών οδηγών είναι προστατευόμενο έργο πνευματικής ιδιοκτησίας
+# και το repo είναι δημόσιο. Μένει τοπικά, ΔΕΝ ανεβαίνει στο git.
+book/*
+!book/.gitkeep
+!book/README.md
+
+# Ακατέργαστες λήψεις (ΦΕΚ PDF κ.λπ.) — αναπαράγονται με `nomothesia fetch`
+.cache/
+raw/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+uv.lock
+
+# Λειτουργικά συστήματα / editors
+.DS_Store
+.idea/
+.vscode/

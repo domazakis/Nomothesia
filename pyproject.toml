@@ -1,0 +1,48 @@
+[project]
+name = "nomothesia"
+version = "0.1.0"
+description = "Σώμα ελληνικής νομοθεσίας για την οδήγηση οχημάτων — συλλογή, κανονικοποίηση, παρακολούθηση αλλαγών"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "pypdf>=4.2",
+    "pdfplumber>=0.11",
+    "selectolax>=0.3.21",
+    "typer>=0.12",
+    "rich>=13.7",
+]
+
+[project.optional-dependencies]
+ocr = [
+    "pytesseract>=0.3.10",
+    "pdf2image>=1.17",
+]
+
+[project.scripts]
+nomothesia = "nomothesia.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "ruff>=0.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nomothesia"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
