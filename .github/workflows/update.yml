@@ -11,6 +11,13 @@ on:
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
+    inputs:
+      nomothetima:
+        description: >-
+          Αναγνωριστικό ενός μόνο νομοθετήματος, για δοκιμή μιας πηγής χωρίς να
+          περιμένεις και τα είκοσι. Κενό σημαίνει όλα.
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -51,9 +58,17 @@ jobs:
         # γίνεται αόρατη. Το τελευταίο βήμα του job τη μετατρέπει σε κόκκινο
         # run — αφού πρώτα ανοίξει το pull request για όσα πέτυχαν.
         continue-on-error: true
+        # Το αναγνωριστικό περνά ως μεταβλητή περιβάλλοντος και όχι μέσα στο
+        # script: ό,τι γράψει κανείς στο πεδίο δεν εκτελείται ως εντολή.
+        env:
+          NOMOTHETIMA: ${{ inputs.nomothetima }}
         run: |
           set -o pipefail
-          uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
+          if [ -n "$NOMOTHETIMA" ]; then
+            uv run nomothesia fetch --id "$NOMOTHETIMA" -v 2>&1 | tee /tmp/fetch.log
+          else
+            uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
+          fi
 
       - name: Εντοπισμός αλλαγών
         id: diff
@@ -65,7 +80,9 @@ jobs:
           fi
 
       - name: Σύνταξη σώματος pull request
-        if: steps.diff.outputs.allages == 'nai'
+        # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
+        # το corpus με το ένα νομοθέτημα που ζητήθηκε.
+        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == ''
         run: |
           {
             echo "Αυτόματη ενημέρωση του corpus από τις επίσημες πηγές."
@@ -82,7 +99,9 @@ jobs:
           } > /tmp/pr-body.md
 
       - name: Άνοιγμα pull request
-        if: steps.diff.outputs.allages == 'nai'
+        # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
+        # το corpus με το ένα νομοθέτημα που ζητήθηκε.
+        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == ''
         uses: peter-evans/create-pull-request@v7
         with:
           branch: enimerosi-nomothesias
