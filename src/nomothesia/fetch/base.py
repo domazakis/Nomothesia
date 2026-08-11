@@ -140,7 +140,11 @@ class Lipsi:
         if not einai_sfalma_alysidas(exc):
             return False
 
-        diefthynsi = httpx.URL(url)
+        # Ο host που έσπασε δεν είναι κατ' ανάγκη αυτός που ζητήσαμε: το
+        # www.et.gr ανακατευθύνει, και η ελλιπής αλυσίδα εμφανίζεται στον
+        # επόμενο σταθμό. Το αίτημα της εξαίρεσης ξέρει πού πράγματι πήγαμε.
+        aitima = getattr(exc, "request", None)
+        diefthynsi = aitima.url if aitima is not None else httpx.URL(url)
         host = diefthynsi.host
         if not host or host in self._dokimasmenoi_hosts:
             return False
@@ -159,6 +163,20 @@ class Lipsi:
         self._client.close()
         self._client = self._neos_client()
         return True
+
+    def _aitima(self, url: str, kefalides: dict[str, str]) -> httpx.Response:
+        """Το αίτημα, με μία ευκαιρία συμπλήρωσης αλυσίδας ανά host.
+
+        Ο βρόχος τερματίζει από μόνος του: κάθε host δοκιμάζεται μία φορά, οπότε
+        μια ανακατεύθυνση με δύο σπασμένες αλυσίδες διορθώνεται σε δύο γύρους
+        και η τρίτη αποτυχία βγαίνει προς τα έξω.
+        """
+        while True:
+            try:
+                return self._client.get(url, headers=kefalides)
+            except httpx.ConnectError as exc:
+                if not self._symplirose_alysida(url, exc):
+                    raise
 
     def _perimene(self) -> None:
         perasan = time.monotonic() - self._teleftaio_aitima
@@ -186,19 +204,11 @@ class Lipsi:
         for prospatheia in range(MEGISTES_PROSPATHEIES):
             try:
                 self._perimene()
-                apantisi = self._client.get(url, headers=kefalides)
+                apantisi = self._aitima(url, kefalides)
             except httpx.ProxyError as exc:
                 # Άρνηση πολιτικής δικτύου. Η επανάληψη δεν πρόκειται να
                 # βοηθήσει — σταματάμε αμέσως με εξήγηση.
                 raise SfalmaLipsis(_minima_apokleismou(url, exc)) from exc
-            except httpx.ConnectError as exc:
-                # Ελλιπής αλυσίδα πιστοποιητικών: αν τη συμπληρώσουμε, η αμέσως
-                # επόμενη προσπάθεια πετυχαίνει — δεν χρειάζεται αναμονή.
-                if self._symplirose_alysida(url, exc):
-                    continue
-                teleftaio_sfalma = exc
-                time.sleep(2**prospatheia)
-                continue
             except httpx.HTTPError as exc:
                 teleftaio_sfalma = exc
                 time.sleep(2**prospatheia)
