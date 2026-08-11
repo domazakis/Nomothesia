@@ -1,0 +1,57 @@
+name: Έλεγχος αλλαγών νομοθεσίας
+
+# Τρέχει κάθε Δευτέρα πρωί και ανοίγει pull request μόνο αν κάτι όντως άλλαξε.
+# Σκοπός: να μη χρειάζεται να θυμάται κανείς να ελέγχει τη νομοθεσία.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  elegxos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Εγκατάσταση uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Εγκατάσταση εξαρτήσεων
+        run: |
+          uv venv
+          uv pip install -e .
+
+      - name: Έλεγχος μητρώου
+        run: uv run nomothesia validate
+
+      - name: Λήψη νομοθεσίας
+        id: fetch
+        # Μια αποτυχημένη πηγή δεν πρέπει να ακυρώνει τις υπόλοιπες· το βήμα
+        # καταγράφει την έξοδο και συνεχίζει.
+        continue-on-error: true
+        run: |
+          uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
+
+      - name: Εντοπισμός αλλαγών
+        id: diff
+        run: |
+          if [ -n "$(git status --porcelain corpus/)" ]; then
+            echo "allages=nai" >> "$GITHUB_OUTPUT"
+          else
+            echo "allages=ochi" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Άνοιγμα pull request
+        if: steps.diff.outputs.allages == 'nai'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: enimerosi-nomothesias
+          title: "Ενημέρωση νομοθεσίας"
+          commit-message: "Ενημέρωση corpus από τις επίσημες πηγές"
+          body-path: /tmp/fetch.log
+          add-paths: corpus/
+          delete-branch: true

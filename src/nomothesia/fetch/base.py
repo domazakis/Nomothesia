@@ -1,0 +1,199 @@
+"""Πελάτης HTTP με προσωρινή αποθήκευση, επαναλήψεις και ευγενικό ρυθμό.
+
+Κατεβάζουμε από δημόσιους κρατικούς εξυπηρετητές. Δύο κανόνες διέπουν τον
+σχεδιασμό:
+
+* **Μη ζητάς ό,τι έχεις ήδη.** Κρατάμε ETag και Last-Modified και στέλνουμε
+  conditional GET. Ένα ΦΕΚ του 1983 δεν πρόκειται να αλλάξει· δεν υπάρχει λόγος
+  να το ξανακατεβάζουμε κάθε εβδομάδα.
+* **Μη χτυπάς γρήγορα.** Παύση ανάμεσα στα αιτήματα, ώστε ο εβδομαδιαίος
+  έλεγχος να μη μοιάζει με επίθεση.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import time
+from dataclasses import dataclass
+from pathlib import Path
+
+import httpx
+
+from nomothesia.registry import repo_riza
+
+# Οι κεφαλίδες HTTP είναι ASCII — δεν μπαίνουν ελληνικά εδώ.
+USER_AGENT = (
+    "Nomothesia/0.1 (public road-traffic legislation collector; "
+    "+https://github.com/domazakis/Nomothesia)"
+)
+
+PAUSI_METAXY_AITIMATON = 2.0
+MEGISTES_PROSPATHEIES = 4
+XRONOS_ANAMONIS = 60.0
+
+
+class SfalmaLipsis(RuntimeError):
+    """Η λήψη απέτυχε οριστικά."""
+
+
+def _minima_apokleismou(url: str, aitia: object) -> str:
+    """Εξηγεί τι σημαίνει άρνηση του proxy, αντί για ένα σκέτο σφάλμα δικτύου.
+
+    Είναι η πιο πιθανή αποτυχία όταν το εργαλείο τρέχει μέσα σε cloud συνεδρία
+    με περιορισμένη πολιτική εξερχόμενης κίνησης.
+    """
+    from urllib.parse import urlparse
+
+    domain = urlparse(url).netloc or url
+    return (
+        f"το δίκτυο απέρριψε τη σύνδεση προς {domain} ({aitia}). "
+        f"Αν τρέχεις σε cloud συνεδρία, το domain δεν επιτρέπεται από την "
+        f"πολιτική δικτύου του environment. Δες το docs/ENIMEROSI.md για το "
+        f"πώς προστίθεται, ή τρέξε την εντολή τοπικά."
+    )
+
+
+@dataclass
+class ApotelesmaLipsis:
+    perieksomeno: bytes
+    url: str
+    apo_cache: bool
+    typos_perieksomenou: str
+
+    @property
+    def checksum(self) -> str:
+        return hashlib.sha256(self.perieksomeno).hexdigest()
+
+    @property
+    def einai_pdf(self) -> bool:
+        return self.perieksomeno[:5] == b"%PDF-"
+
+
+class Lipsi:
+    """Κατεβάζει URL και κρατά αντίγραφο στον φάκελο `.cache/`.
+
+    Ο φάκελος `.cache/` είναι στο .gitignore: είναι αναπαράξιμος και δεν έχει
+    θέση στο ιστορικό του repository.
+    """
+
+    def __init__(
+        self,
+        *,
+        fakelos_cache: Path | None = None,
+        pausi: float = PAUSI_METAXY_AITIMATON,
+        timeout: float = 120.0,
+    ) -> None:
+        self.fakelos_cache = fakelos_cache or (repo_riza() / ".cache")
+        self.fakelos_cache.mkdir(parents=True, exist_ok=True)
+        self.pausi = pausi
+        self._teleftaio_aitima = 0.0
+        self._client = httpx.Client(
+            headers={"User-Agent": USER_AGENT},
+            timeout=timeout,
+            follow_redirects=True,
+        )
+
+    def __enter__(self) -> Lipsi:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def close(self) -> None:
+        self._client.close()
+
+    # ── εσωτερικά ────────────────────────────────────────────────────────
+    def _kleidi(self, url: str) -> str:
+        return hashlib.sha256(url.encode("utf-8")).hexdigest()[:24]
+
+    def _diadromi_dedomenon(self, url: str) -> Path:
+        return self.fakelos_cache / f"{self._kleidi(url)}.bin"
+
+    def _diadromi_meta(self, url: str) -> Path:
+        return self.fakelos_cache / f"{self._kleidi(url)}.json"
+
+    def _perimene(self) -> None:
+        perasan = time.monotonic() - self._teleftaio_aitima
+        if perasan < self.pausi:
+            time.sleep(self.pausi - perasan)
+        self._teleftaio_aitima = time.monotonic()
+
+    # ── δημόσιο API ──────────────────────────────────────────────────────
+    def kateveste(self, url: str, *, agnoise_cache: bool = False) -> ApotelesmaLipsis:
+        diadromi_dedomenon = self._diadromi_dedomenon(url)
+        diadromi_meta = self._diadromi_meta(url)
+
+        meta: dict[str, str] = {}
+        if diadromi_meta.exists() and not agnoise_cache:
+            meta = json.loads(diadromi_meta.read_text(encoding="utf-8"))
+
+        kefalides: dict[str, str] = {}
+        if diadromi_dedomenon.exists() and not agnoise_cache:
+            if etag := meta.get("etag"):
+                kefalides["If-None-Match"] = etag
+            if last_modified := meta.get("last_modified"):
+                kefalides["If-Modified-Since"] = last_modified
+
+        teleftaio_sfalma: Exception | None = None
+        for prospatheia in range(MEGISTES_PROSPATHEIES):
+            try:
+                self._perimene()
+                apantisi = self._client.get(url, headers=kefalides)
+            except httpx.ProxyError as exc:
+                # Άρνηση πολιτικής δικτύου. Η επανάληψη δεν πρόκειται να
+                # βοηθήσει — σταματάμε αμέσως με εξήγηση.
+                raise SfalmaLipsis(_minima_apokleismou(url, exc)) from exc
+            except httpx.HTTPError as exc:
+                teleftaio_sfalma = exc
+                time.sleep(2**prospatheia)
+                continue
+
+            if apantisi.status_code == 304 and diadromi_dedomenon.exists():
+                return ApotelesmaLipsis(
+                    perieksomeno=diadromi_dedomenon.read_bytes(),
+                    url=url,
+                    apo_cache=True,
+                    typos_perieksomenou=meta.get("content_type", ""),
+                )
+
+            if apantisi.status_code == 429 or apantisi.status_code >= 500:
+                teleftaio_sfalma = SfalmaLipsis(
+                    f"HTTP {apantisi.status_code} από {url}"
+                )
+                time.sleep(min(2**prospatheia * 5, XRONOS_ANAMONIS))
+                continue
+
+            if apantisi.status_code == 403:
+                raise SfalmaLipsis(
+                    f"HTTP 403 για {url}. Αν τρέχεις σε cloud συνεδρία, το domain "
+                    f"πιθανότατα δεν επιτρέπεται από την πολιτική δικτύου του "
+                    f"environment — δες το docs/ENIMEROSI.md."
+                )
+
+            apantisi.raise_for_status()
+
+            diadromi_dedomenon.write_bytes(apantisi.content)
+            diadromi_meta.write_text(
+                json.dumps(
+                    {
+                        "url": url,
+                        "etag": apantisi.headers.get("ETag", ""),
+                        "last_modified": apantisi.headers.get("Last-Modified", ""),
+                        "content_type": apantisi.headers.get("Content-Type", ""),
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            return ApotelesmaLipsis(
+                perieksomeno=apantisi.content,
+                url=url,
+                apo_cache=False,
+                typos_perieksomenou=apantisi.headers.get("Content-Type", ""),
+            )
+
+        raise SfalmaLipsis(
+            f"απέτυχε η λήψη του {url} μετά από {MEGISTES_PROSPATHEIES} προσπάθειες"
+        ) from teleftaio_sfalma
