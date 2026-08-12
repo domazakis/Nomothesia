@@ -19,6 +19,7 @@ from rich.table import Table
 
 from nomothesia import changes as ch
 from nomothesia.export import exagoge_nomothetimatos, gia_knowledge_base
+from nomothesia.extract.doc import einai_doc, keimeno_apo_doc
 from nomothesia.extract.html import keimeno_apo_html, syndesmoi_apo_html
 from nomothesia.extract.pdf import exei_epipedo_keimenou, keimeno_apo_pdf
 from nomothesia.fetch.base import Lipsi, SfalmaLipsis
@@ -289,8 +290,8 @@ def _morfi(dedomena: bytes) -> str:
     """
     ypografes = (
         (b"%PDF-", "PDF"),
-        (b"\xd0\xcf\x11\xe0", "Word (παλαιό δυαδικό .doc — χρειάζεται μετατροπή)"),
-        (b"PK\x03\x04", "ZIP ή .docx"),
+        (b"\xd0\xcf\x11\xe0", "Word (παλαιό δυαδικό .doc)"),
+        (b"PK\x03\x04", "ZIP ή .docx — δεν διαβάζεται ακόμη"),
         (b"{\\rtf", "RTF"),
     )
     for ypografi, onoma in ypografes:
@@ -328,6 +329,8 @@ def keimeno(
             console.print("[bold red]✗[/] σαρωμένο PDF, χωρίς επίπεδο κειμένου")
             raise typer.Exit(code=1)
         akatergasto = keimeno_apo_pdf(apotelesma.perieksomeno)
+    elif einai_doc(apotelesma.perieksomeno):
+        akatergasto = keimeno_apo_doc(apotelesma.perieksomeno)
     else:
         akatergasto = keimeno_apo_html(apotelesma.perieksomeno)
 

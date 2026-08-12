@@ -52,6 +52,10 @@ class TyposPigis(StrEnum):
     KODIKOPOIIMENO_HTML = "kodikopoiimeno_html"
     EURLEX_HTML = "eurlex_html"
     PDF_ALLI_PIGI = "pdf_alli_pigi"
+    # Παλαιό δυαδικό Word. Ο δημόσιος τομέας δημοσιεύει ακόμη σε αυτή τη
+    # μορφή, και κάποτε είναι το μόνο αναγνώσιμο κείμενο ενός νομοθετήματος
+    # που στο ΦΕΚ υπάρχει μόνο σαρωμένο. Δες extract/doc.py.
+    DOC_ALLI_PIGI = "doc_alli_pigi"
     # Αντίγραφο ΦΕΚ μέσα στο repository, για όταν η επίσημη πηγή είναι
     # απρόσιτη. Δες sources/fek/README.md.
     TOPIKO_FEK = "topiko_fek"

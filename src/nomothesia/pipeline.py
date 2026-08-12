@@ -6,6 +6,7 @@ import hashlib
 import logging
 from dataclasses import dataclass
 
+from nomothesia.extract.doc import einai_doc, keimeno_apo_doc
 from nomothesia.extract.html import keimeno_apo_html
 from nomothesia.extract.pdf import exei_epipedo_keimenou, keimeno_apo_pdf
 from nomothesia.fetch.base import Lipsi, SfalmaLipsis
@@ -34,6 +35,7 @@ PROTERAIOTITA_EX_ORISMOU = (
     TyposPigis.TOPIKO_FEK,
     TyposPigis.KODIKOPOIIMENO_HTML,
     TyposPigis.PDF_ALLI_PIGI,
+    TyposPigis.DOC_ALLI_PIGI,
 )
 
 
@@ -165,6 +167,8 @@ def _apo_pigi(
                 "Χρειάζεται OCR — εγκατάσταση με `pip install 'nomothesia[ocr]'`."
             )
         akatergasto = keimeno_apo_pdf(apotelesma.perieksomeno)
+    elif einai_doc(apotelesma.perieksomeno):
+        akatergasto = keimeno_apo_doc(apotelesma.perieksomeno)
     else:
         akatergasto = keimeno_apo_html(apotelesma.perieksomeno)
 
