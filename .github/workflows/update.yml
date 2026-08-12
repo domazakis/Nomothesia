@@ -48,6 +48,15 @@ on:
         type: boolean
         required: false
         default: false
+      apothikefsi:
+        description: >-
+          Να κρατηθεί το αποτέλεσμα μιας στοχευμένης λήψης. Κανονικά η λήψη
+          ενός μόνο νομοθετήματος είναι διαγνωστική και δεν αγγίζει το corpus·
+          όταν όμως μια πηγή απαντά μόνο στον runner, αυτός είναι ο τρόπος να
+          μπει το κείμενο στο repository.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -113,6 +122,11 @@ jobs:
 
       - name: Εντοπισμός αλλαγών
         id: diff
+        env:
+          NOMOTHETIMA: ${{ inputs.nomothetima }}
+          SYNDESMOI: ${{ inputs.syndesmoi }}
+          KEIMENO: ${{ inputs.keimeno }}
+          APOTHIKEFSI: ${{ inputs.apothikefsi }}
         run: |
           if [ -n "$(git status --porcelain corpus/)" ]; then
             echo "allages=nai" >> "$GITHUB_OUTPUT"
@@ -120,10 +134,17 @@ jobs:
             echo "allages=ochi" >> "$GITHUB_OUTPUT"
           fi
 
+          # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
+          # το corpus με το ένα νομοθέτημα που ζητήθηκε. Εξαίρεση μόνο όταν
+          # ζητηθεί ρητά — για πηγές που απαντούν αποκλειστικά στον runner.
+          if [ -z "$NOMOTHETIMA$SYNDESMOI$KEIMENO" ] || [ "$APOTHIKEFSI" = "true" ]; then
+            echo "kratame=nai" >> "$GITHUB_OUTPUT"
+          else
+            echo "kratame=ochi" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Σύνταξη σώματος pull request
-        # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
-        # το corpus με το ένα νομοθέτημα που ζητήθηκε.
-        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == '' && inputs.keimeno == ''
+        if: steps.diff.outputs.allages == 'nai' && steps.diff.outputs.kratame == 'nai'
         run: |
           {
             echo "Αυτόματη ενημέρωση του corpus από τις επίσημες πηγές."
@@ -140,9 +161,7 @@ jobs:
           } > /tmp/pr-body.md
 
       - name: Άνοιγμα pull request
-        # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
-        # το corpus με το ένα νομοθέτημα που ζητήθηκε.
-        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == '' && inputs.keimeno == ''
+        if: steps.diff.outputs.allages == 'nai' && steps.diff.outputs.kratame == 'nai'
         uses: peter-evans/create-pull-request@v7
         with:
           branch: enimerosi-nomothesias
@@ -165,10 +184,11 @@ jobs:
               failure) echo "- Πηγές: **τουλάχιστον μία απέτυχε.**" ;;
               *)       echo "- Πηγές: η λήψη δεν έτρεξε καν." ;;
             esac
-            case "${{ steps.diff.outputs.allages }}" in
-              nai)  echo "- Corpus: άλλαξε — άνοιξε pull request." ;;
-              ochi) echo "- Corpus: καμία αλλαγή, δεν ανοίγει pull request." ;;
-              *)    echo "- Corpus: δεν ελέγχθηκε." ;;
+            case "${{ steps.diff.outputs.allages }}${{ steps.diff.outputs.kratame }}" in
+              naina*) echo "- Corpus: άλλαξε — άνοιξε pull request." ;;
+              naioc*) echo "- Corpus: άλλαξε, αλλά η εκτέλεση ήταν διαγνωστική και δεν κρατήθηκε τίποτα." ;;
+              ochi*)  echo "- Corpus: καμία αλλαγή, δεν ανοίγει pull request." ;;
+              *)      echo "- Corpus: δεν ελέγχθηκε." ;;
             esac
             echo
             echo '```'
