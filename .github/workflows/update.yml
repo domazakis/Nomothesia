@@ -30,6 +30,11 @@ on:
           (π.χ. «pdf,et.gr»). Ισχύει μόνο μαζί με το προηγούμενο πεδίο.
         required: false
         default: ""
+      selides:
+        description: >-
+          Πόσες σελίδες καταλόγου να διατρέξει η ανίχνευση, μέσω «?page=N».
+        required: false
+        default: "1"
 
 permissions:
   contents: write
@@ -76,10 +81,12 @@ jobs:
           NOMOTHETIMA: ${{ inputs.nomothetima }}
           SYNDESMOI: ${{ inputs.syndesmoi }}
           FILTRO: ${{ inputs.filtro }}
+          SELIDES: ${{ inputs.selides }}
         run: |
           set -o pipefail
           if [ -n "$SYNDESMOI" ]; then
-            uv run nomothesia syndesmoi "$SYNDESMOI" ${FILTRO:+--filtro "$FILTRO"} 2>&1 | tee /tmp/fetch.log
+            uv run nomothesia syndesmoi "$SYNDESMOI" ${FILTRO:+--filtro "$FILTRO"} \
+              ${SELIDES:+--selides "$SELIDES"} 2>&1 | tee /tmp/fetch.log
           elif [ -n "$NOMOTHETIMA" ]; then
             uv run nomothesia fetch --id "$NOMOTHETIMA" -v 2>&1 | tee /tmp/fetch.log
           else

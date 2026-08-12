@@ -253,7 +253,10 @@ def syndesmoi(
         help="Κράτα όσους συνδέσμους περιέχουν κάποιον από αυτούς τους όρους "
         "(χωρισμένους με κόμμα).",
     ),
-    plithos: int = typer.Option(80, help="Μέγιστο πλήθος αποτελεσμάτων."),
+    plithos: int = typer.Option(200, help="Μέγιστο πλήθος αποτελεσμάτων."),
+    selides: int = typer.Option(
+        1, help="Πόσες σελίδες καταλόγου να διατρέξει, μέσω `?page=N`."
+    ),
 ) -> None:
     """Δείχνει τους συνδέσμους μιας σελίδας — για ανίχνευση νέων πηγών.
 
@@ -261,15 +264,30 @@ def syndesmoi(
     αυτόν τον νόμο και πού δείχνει». Η εντολή απαντά χωρίς μαντεψιές, και
     τρέχει και μέσα από το GitHub Action για περιβάλλοντα που δεν έχουν τα
     ίδια δικαιώματα δικτύου.
-    """
-    with Lipsi() as lipsi:
-        try:
-            apotelesma = lipsi.kateveste(url)
-        except SfalmaLipsis as exc:
-            console.print(f"[bold red]✗[/] {exc}")
-            raise typer.Exit(code=1) from exc
 
-    evrethenta = syndesmoi_apo_html(apotelesma.perieksomeno, vasi=url)
+    Με `--selides` διατρέχει και τη σελιδοποίηση ενός καταλόγου, ώστε ο έλεγχος
+    «τι υπάρχει εκεί που δεν έχουμε» να μη χρειάζεται μία εκτέλεση ανά σελίδα.
+    """
+    evrethenta: list[tuple[str, str]] = []
+    idonta: set[str] = set()
+
+    with Lipsi() as lipsi:
+        for selida in range(1, max(selides, 1) + 1):
+            diefthynsi = url if selida == 1 else f"{url.rstrip('/')}/?page={selida}"
+            try:
+                apotelesma = lipsi.kateveste(diefthynsi)
+            except SfalmaLipsis as exc:
+                console.print(f"[bold red]✗[/] {exc}")
+                if selida == 1:
+                    raise typer.Exit(code=1) from exc
+                break
+            for keimeno, syndesmos in syndesmoi_apo_html(
+                apotelesma.perieksomeno, vasi=diefthynsi
+            ):
+                if syndesmos not in idonta:
+                    idonta.add(syndesmos)
+                    evrethenta.append((keimeno, syndesmos))
+
     if filtro:
         oroi = [o.strip().lower() for o in filtro.split(",") if o.strip()]
         evrethenta = [
@@ -280,7 +298,8 @@ def syndesmoi(
 
     console.print(f"[bold]{len(evrethenta)}[/] σύνδεσμοι από {url}\n")
     for keimeno, syndesmos in evrethenta[:plithos]:
-        console.print(f"  {keimeno[:70] or '—'}\n    [dim]{syndesmos}[/]")
+        # Μία γραμμή ανά σύνδεσμο: ο κατάλογος διαβάζεται σε ένα log, όχι σε έξι.
+        console.print(f"{syndesmos.rsplit('/', 1)[-1]:<44} {keimeno[:64]}")
     if len(evrethenta) > plithos:
         console.print(f"\n[dim]…και {len(evrethenta) - plithos} ακόμη.[/]")
 
