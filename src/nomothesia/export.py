@@ -170,6 +170,14 @@ def exagoge_nomothetimatos(n: Nomothetima) -> ApotelesmaExport | None:
         gia_ekfonisi(n.perigrafi or ""),
         "",
     ]
+    # Το όριο του κειμένου, όταν δεν φαίνεται διαβάζοντάς το. Στο π.δ.
+    # 237/1986 είναι ότι τα άρθρα 11-24 φέρουν τη διατύπωση του 1986· χωρίς
+    # αυτό, ο πράκτορας απαγγέλλει πρόστιμα σε δραχμές σαν να ισχύουν.
+    # Οι `simeioseis` του μητρώου δεν έρχονται εδώ: είναι ημερολόγιο
+    # συντηρητή, γεμάτο πιστοποιητικά και parsers, και δεν αφορούν κανέναν
+    # που ρωτά για την ασφάλιση του αυτοκινήτου του.
+    if n.prosochi:
+        kommatia += ["## Προσοχή", "", gia_ekfonisi(n.prosochi), ""]
     kommatia += [_keimeno_arthrou(n, a, tautotita) for a in arthra]
     keimeno = "\n".join(kommatia).strip() + "\n"
 

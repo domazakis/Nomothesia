@@ -73,16 +73,25 @@ AFTOTELEIS = (
 
 
 def _grammata_me_keraia(keimeno: str) -> str:
-    """«περ. β΄» → «περίπτωση βήτα», «Μέρος Α΄» → «Μέρος Άλφα»."""
+    """«περ. β΄» → «περίπτωση βήτα», «Μέρος Α΄» → «Μέρος Άλφα».
+
+    Η κεραία λειτουργεί και ως διαχωριστικό: οι νομικές βάσεις γράφουν
+    «περ.ε΄αντικαταστάθηκε», χωρίς κενό. Αν το όνομα του γράμματος μπει
+    ατόφιο, προκύπτει «έψιλοναντικαταστάθηκε» — λέξη που καμία φωνή δεν
+    μπορεί να προφέρει. Γι' αυτό, όταν ακολουθεί γράμμα, μπαίνει κενό.
+    """
 
     def antikatastasi(m: re.Match[str]) -> str:
         gramma = m.group(1)
         onoma = GRAMMATA.get(gramma.lower())
         if not onoma:
             return m.group(0)
-        return onoma.capitalize() if gramma[0].isupper() else onoma
+        if gramma[0].isupper():
+            onoma = onoma.capitalize()
+        epomeno = keimeno[m.end() : m.end() + 1]
+        return onoma + (" " if epomeno.isalpha() else "")
 
-    return re.sub(r"\b(στ|[Α-Ωα-ω])[΄']", antikatastasi, keimeno)
+    return re.sub(r"\b(στ|[Α-Ωα-ω])[΄'`]", antikatastasi, keimeno)
 
 
 def _arithmoi_nomothetimaton(keimeno: str) -> str:

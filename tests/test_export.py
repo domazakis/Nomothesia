@@ -99,3 +99,22 @@ def test_idios_arithmos_arthrou_se_dyo_meri_den_synchoneuetai(kok):
     )
     apotelesma = ex.exagoge_nomothetimatos(kok)
     assert apotelesma.plithos_arthron == 3
+
+
+def test_oi_simeioseis_taxidevoun_me_to_knowledge_base(kok, tmp_path):
+    """Ό,τι προειδοποιεί για την πηγή πρέπει να φτάνει στον πράκτορα.
+
+    Τα άρθρα 11-24 του π.δ. 237/1986 φέρουν τη διατύπωση του 1986, με
+    πρόστιμα σε δραχμές. Αν η προειδοποίηση μείνει στο μητρώο, ο πράκτορας
+    τα απαγγέλλει σαν να ισχύουν.
+    """
+    kok.prosochi = "Τα άρθρα 11-24 φέρουν τη διατύπωση του 1986."
+    _grapse_arthra(
+        kok.fakelos_corpus(),
+        [{"arthro": "1", "paragrafos": "1", "keimeno": "Κείμενο."}],
+    )
+
+    keimeno = ex.exagoge_nomothetimatos(kok).diadromi.read_text(encoding="utf-8")
+
+    assert "Προσοχή" in keimeno
+    assert "φέρουν τη διατύπωση του 1986" in keimeno

@@ -138,6 +138,13 @@ class Nomothetima(BaseModel):
     scheseis: Scheseis = Field(default_factory=Scheseis)
     piges: list[Pigi] = Field(default_factory=list)
     simeioseis: str | None = None
+    # Οι `simeioseis` είναι ημερολόγιο συντηρητή: ποιες πηγές δοκιμάστηκαν,
+    # τι έσπασε, τι μένει. Δεν έχουν θέση σε φωνητικό πράκτορα.
+    #
+    # Η `prosochi` είναι το αντίθετο: μία σύντομη πρόταση για τον αναγνώστη
+    # του κειμένου, που ταξιδεύει μαζί του στο knowledge base. Μπαίνει μόνο
+    # όταν το κείμενο έχει όριο το οποίο δεν φαίνεται διαβάζοντάς το.
+    prosochi: str | None = None
 
     @model_validator(mode="after")
     def _elegxos_tautotitas(self) -> Nomothetima:
