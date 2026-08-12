@@ -94,3 +94,19 @@ def test_topiko_arxeio_pou_leipei_to_leei_katharu(tmp_path, monkeypatch):
     with _lipsi(lambda _: httpx.Response(200), tmp_path) as lipsi:
         with pytest.raises(SfalmaLipsis, match="δεν υπάρχει"):
             lipsi.kateveste("file:sources/fek/anyparkto.pdf")
+
+
+def test_adeio_soma_epanalamvanetai(tmp_path, monkeypatch):
+    """«200 OK» χωρίς περιεχόμενο είναι σκόνταμα διακομιστή, όχι απάντηση.
+
+    Το EUR-Lex το κάνει κατά διαστήματα. Χωρίς επανάληψη, νομοθετήματα έβγαιναν
+    και ξανάμπαιναν στο corpus από εκτέλεση σε εκτέλεση σαν να άλλαζε ο νόμος.
+    """
+    monkeypatch.setattr("nomothesia.fetch.base.time.sleep", lambda _: None)
+    apantiseis = [httpx.Response(200, content=b""), httpx.Response(200, content=b"ODIGIA")]
+
+    with _lipsi(lambda _: apantiseis.pop(0), tmp_path) as lipsi:
+        apotelesma = lipsi.kateveste("https://paradeigma.gr/kymainomeno")
+
+    assert apotelesma.perieksomeno == b"ODIGIA"
+    assert not apantiseis, "η πρώτη, άδεια απάντηση έπρεπε να απορριφθεί"

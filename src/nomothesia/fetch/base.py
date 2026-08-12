@@ -260,6 +260,16 @@ class Lipsi:
             if apantisi.status_code >= 400:
                 raise SfalmaLipsis(f"HTTP {apantisi.status_code} για {url}")
 
+            # Το EUR-Lex απαντά κατά διαστήματα «200 OK» με άδειο σώμα. Δεν
+            # είναι απάντηση, είναι σκόνταμα του διακομιστή: το ίδιο URL δίνει
+            # ολόκληρη την οδηγία λίγα λεπτά αργότερα. Χωρίς επανάληψη, ένα
+            # νομοθέτημα έβγαινε και ξανάμπαινε στο corpus από εκτέλεση σε
+            # εκτέλεση, σαν να άλλαζε ο νόμος.
+            if not apantisi.content:
+                teleftaio_sfalma = SfalmaLipsis(f"άδειο σώμα απάντησης από {url}")
+                time.sleep(min(2**prospatheia * 5, XRONOS_ANAMONIS))
+                continue
+
             diadromi_dedomenon.write_bytes(apantisi.content)
             diadromi_meta.write_text(
                 json.dumps(
