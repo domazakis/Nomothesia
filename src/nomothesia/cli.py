@@ -245,6 +245,37 @@ def export() -> None:
         )
 
 
+def _agnosta_nomothetimata(
+    evrethenta: list[tuple[str, str]],
+) -> list[tuple[str, str]]:
+    """Κρατά όσα δεν καλύπτονται ήδη από το μητρώο.
+
+    Ο κατάλογος μιας κατηγορίας έχει διακόσιες εγγραφές και το ερώτημα είναι
+    «τι μας λείπει». Η σύγκριση γίνεται στον αριθμό και το έτος, όπως
+    εμφανίζονται στο κείμενο του συνδέσμου («Νόμος 5209/2025»), ώστε να μην
+    εξαρτάται από τη μορφή της διεύθυνσης.
+
+    Τα καταργημένα παραλείπονται: δεν πρόκειται να μπουν στο knowledge base.
+    """
+    import re
+
+    mitroo = _mitroo()
+    gnosta = {
+        (str(n.arithmos).strip(), str(n.etos)) for n in mitroo.nomothetimata
+    }
+    tautotita = re.compile(r"(\d{1,6})\s*/\s*((?:19|20)\d{2})")
+
+    apotelesma = []
+    for keimeno, syndesmos in evrethenta:
+        if "Καταργη" in keimeno or "καταργη" in keimeno:
+            continue
+        taires = tautotita.findall(keimeno)
+        if any((ar, et) in gnosta for ar, et in taires):
+            continue
+        apotelesma.append((keimeno, syndesmos))
+    return apotelesma
+
+
 @app.command()
 def syndesmoi(
     url: str = typer.Argument(..., help="Η σελίδα που θα εξεταστεί."),
@@ -256,6 +287,10 @@ def syndesmoi(
     plithos: int = typer.Option(200, help="Μέγιστο πλήθος αποτελεσμάτων."),
     selides: int = typer.Option(
         1, help="Πόσες σελίδες καταλόγου να διατρέξει, μέσω `?page=N`."
+    ),
+    agnosta: bool = typer.Option(
+        False,
+        help="Μόνο ό,τι δεν υπάρχει ήδη στο μητρώο και δεν είναι καταργημένο.",
     ),
 ) -> None:
     """Δείχνει τους συνδέσμους μιας σελίδας — για ανίχνευση νέων πηγών.
@@ -295,6 +330,9 @@ def syndesmoi(
             for k, u in evrethenta
             if any(o in u.lower() or o in k.lower() for o in oroi)
         ]
+
+    if agnosta:
+        evrethenta = _agnosta_nomothetimata(evrethenta)
 
     console.print(f"[bold]{len(evrethenta)}[/] σύνδεσμοι από {url}\n")
     for keimeno, syndesmos in evrethenta[:plithos]:

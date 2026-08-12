@@ -35,6 +35,13 @@ on:
           Πόσες σελίδες καταλόγου να διατρέξει η ανίχνευση, μέσω «?page=N».
         required: false
         default: "1"
+      agnosta:
+        description: >-
+          Να δείξει μόνο όσα δεν υπάρχουν ήδη στο μητρώο — ο έλεγχος «τι μας
+          λείπει» χωρίς να διαβάσει κανείς διακόσιες εγγραφές.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -82,11 +89,13 @@ jobs:
           SYNDESMOI: ${{ inputs.syndesmoi }}
           FILTRO: ${{ inputs.filtro }}
           SELIDES: ${{ inputs.selides }}
+          AGNOSTA: ${{ inputs.agnosta }}
         run: |
           set -o pipefail
           if [ -n "$SYNDESMOI" ]; then
             uv run nomothesia syndesmoi "$SYNDESMOI" ${FILTRO:+--filtro "$FILTRO"} \
-              ${SELIDES:+--selides "$SELIDES"} 2>&1 | tee /tmp/fetch.log
+              ${SELIDES:+--selides "$SELIDES"} \
+              $([ "$AGNOSTA" = "true" ] && echo --agnosta) 2>&1 | tee /tmp/fetch.log
           elif [ -n "$NOMOTHETIMA" ]; then
             uv run nomothesia fetch --id "$NOMOTHETIMA" -v 2>&1 | tee /tmp/fetch.log
           else
