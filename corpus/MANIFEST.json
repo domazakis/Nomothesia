@@ -1,6 +1,6 @@
 {
   "enimerosi": "2026-08-12",
-  "plithos": 12,
+  "plithos": 13,
   "nomothetimata": {
     "kok-5209-2025": {
       "checksum_pigis": "2ae6d4b3e09f5a25090cdf20ceba5afe98f596ac618777d9b9dbcc232ca4d51b",
@@ -64,6 +64,14 @@
       "plithos_arthron": 9,
       "plithos_paragrafon": 29,
       "pigi_url": "file:sources/fek/20260100117.pdf",
+      "epalithevmeno_fek": true
+    },
+    "pd-237-1986": {
+      "checksum_pigis": "73df22a100374a6bf8bdd6a66286ac09ce8b90146b67c4110aeefbef498076c5",
+      "checksum_keimenou": "8f5341200cf1c074c479fb4cca66cf85a960dd9fc985247c05726fcce2e513f7",
+      "plithos_arthron": 66,
+      "plithos_paragrafon": 153,
+      "pigi_url": "https://eeamarketfiles.blob.core.windows.net/blob/assets/images/ekpaideutis/pd_237_asfalies_autokinit.doc",
       "epalithevmeno_fek": true
     },
     "pd-51-2012": {
