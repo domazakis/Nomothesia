@@ -253,7 +253,12 @@ class Lipsi:
                     f"environment — δες το docs/ENIMEROSI.md."
                 )
 
-            apantisi.raise_for_status()
+            # Κάθε σφάλμα γίνεται SfalmaLipsis, που ο αγωγός ξέρει να πιάσει.
+            # Το `raise_for_status()` του httpx πετούσε δική του εξαίρεση, η
+            # οποία δραπέτευε από τον αγωγό: ένα 404 σε μία πηγή ακύρωνε
+            # ολόκληρη την εκτέλεση και τα υπόλοιπα δεκαεννιά νομοθετήματα.
+            if apantisi.status_code >= 400:
+                raise SfalmaLipsis(f"HTTP {apantisi.status_code} για {url}")
 
             diadromi_dedomenon.write_bytes(apantisi.content)
             diadromi_meta.write_text(
