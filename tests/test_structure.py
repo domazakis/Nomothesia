@@ -230,3 +230,11 @@ def test_titlos_pou_den_teleionei_pote_den_einai_titlos():
 
     assert arthra[0].titlos == ""
     assert "Κατά την έννοια του παρόντος" in arthra[0].keimeno
+
+
+def test_epikefalida_mesa_se_eisagogika_anagnorizetai():
+    """Οι νομικές βάσεις τυπώνουν σε εισαγωγικά ό,τι αντικαταστάθηκε."""
+    arthra = analyse_domi('"Άρθρο 8"\nΜεταβίβαση\n1. Αν μεταβιβαστεί η κυριότητα.')
+
+    assert [a.arithmos for a in arthra] == ["8"]
+    assert arthra[0].titlos == "Μεταβίβαση"

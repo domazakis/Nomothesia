@@ -76,12 +76,12 @@ APOTYPOMATA_VASIS = [
     re.compile(r"Προισχύσασες\s+μορφές\s+άρθρου\s*:\s*\d+"),
     re.compile(r"Κατ['΄’]?\s*Εξουσιοδότηση\s+εκδοθείσα\s+Νομοθεσία\s*:\s*\d+"),
 ]
-# Μετά τον δείκτη, το έγγραφο επαναλαμβάνει την επικεφαλίδα με τον δικό του
-# τρόπο — «"Άρθρο 8», «Αρθρου 27», «"Αρθρο 34 Με απόφαση…». Η επανάληψη είναι
-# περιττή και, όταν σέρνει μαζί της κείμενο, γίνεται ψευδής τίτλος.
-EPANALIPSI_EPIKEFALIDAS = re.compile(
-    r"(?m)^([ΆΑ]ρθρο (\d+))\n[ \t]*[\"'«]?[ \t]*[ΆΑ]ρθρο[νυΝΥ]?[ \t]+\2\s*[.:]?(?=\s|$)"
-)
+# Ο δείκτης όμως δεν χρειάζεται πάντα: πολλά άρθρα γράφουν κανονικά τη δική
+# τους επικεφαλίδα λίγο πιο κάτω, σε δική της γραμμή. Εκεί ο δείκτης πρέπει
+# απλώς να φύγει — δύο επικεφαλίδες για το ίδιο άρθρο σημαίνουν δύο άρθρα στο
+# corpus, το ένα κενό. Ανάμεσά τους μεσολαβεί συχνά ο τίτλος του Κεφαλαίου,
+# γι' αυτό η αναζήτηση κοιτάζει λίγο παρακάτω και όχι μόνο την επόμενη γραμμή.
+AKTINA_EPIKEFALIDAS = 300
 
 _SYLLAVISMOS = re.compile(r"(\w)[-­]\n(\w)", re.UNICODE)
 _POLLA_KENA = re.compile(r"[ \t]{2,}")
@@ -129,11 +129,18 @@ def metafrase_deiktes_vasis(keimeno: str) -> str:
     """
     for motivo in APOTYPOMATA_VASIS:
         keimeno = motivo.sub("\n", keimeno)
-    keimeno = DEIKTIS_ARTHROU.sub(
-        lambda m: "\n" if m.group(1) == "0" else f"\nΆρθρο {m.group(1)}\n",
-        keimeno,
-    )
-    return EPANALIPSI_EPIKEFALIDAS.sub(r"\1\n", keimeno)
+
+    def antikatastasi(m: re.Match[str]) -> str:
+        arithmos = m.group(1)
+        if arithmos == "0":
+            return "\n"
+        epomena = keimeno[m.end() : m.end() + AKTINA_EPIKEFALIDAS]
+        idia = re.compile(
+            rf"(?m)^[ \t]*[\"'«]?[ \t]*[ΆΑ]ρθρο[νυΝΥ]?[ \t]+{arithmos}[ \t]*[.:]?[ \t]*$"
+        )
+        return "\n" if idia.search(epomena) else f"\nΆρθρο {arithmos}\n"
+
+    return DEIKTIS_ARTHROU.sub(antikatastasi, keimeno)
 
 
 def enose_syllavismo(keimeno: str) -> str:
