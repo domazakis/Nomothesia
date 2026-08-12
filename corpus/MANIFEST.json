@@ -1,58 +1,66 @@
 {
   "enimerosi": "2026-08-12",
-  "plithos": 13,
+  "plithos": 14,
   "nomothetimata": {
     "kok-5209-2025": {
       "checksum_pigis": "2ae6d4b3e09f5a25090cdf20ceba5afe98f596ac618777d9b9dbcc232ca4d51b",
       "checksum_keimenou": "6fb2737ad638bc9142a5fd2cb53885ac3214047a006000f430b3e6c44bb14f91",
       "plithos_arthron": 132,
-      "plithos_paragrafon": 756,
+      "plithos_paragrafon": 764,
       "pigi_url": "file:sources/fek/20250100100.pdf",
       "epalithevmeno_fek": true
     },
     "nomos-1350-1983": {
-      "checksum_pigis": "99b033009ce4bfb2585e60fa0e656ec45183850a1004ea2d3d227f6757998e1f",
-      "checksum_keimenou": "3aba2f4a9856d1f2c4c896eb0bf46914e74d39d92c68dbc67294cf03499cc815",
+      "checksum_pigis": "fedfa83be870c743429face82dadf366a902165edf1f380b1733fa13d425d4c5",
+      "checksum_keimenou": "d6fdff893696a6c8ba4ae6cf60b9322f466634e0803f1f036c29354ec695b243",
       "plithos_arthron": 15,
-      "plithos_paragrafon": 37,
+      "plithos_paragrafon": 43,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/tekhnikos-elegkhos-kteo/n-1350-1983.html",
       "epalithevmeno_fek": true
     },
     "nomos-2960-2001": {
-      "checksum_pigis": "e280ee1dd0d3fe3a47f9e7a435ff89674822b69ba89b161c6210140de4f139a0",
-      "checksum_keimenou": "94f865c634691fe9af43cbe12ba47f42c463eaa0578d6275554cd7f859979126",
+      "checksum_pigis": "11a8e00286f454e0b92102e557228e7ee916346623801240c12508df320759d3",
+      "checksum_keimenou": "206fd88a337a2a75da52f4db3bc3339dcb3b2447738c348a2b53aa874c3cfa71",
       "plithos_arthron": 178,
-      "plithos_paragrafon": 171,
+      "plithos_paragrafon": 596,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/n-2960-2001.html",
       "epalithevmeno_fek": true
     },
     "nomos-3446-2006": {
-      "checksum_pigis": "330e96627c6ba3f58cfd0e9d3d0e46a6c5cf5e396358bd915658327016a4ec73",
-      "checksum_keimenou": "57586b43f29ee3f8871d387972e0cd5ac10640f48f973d7cacbacdca7c676a07",
+      "checksum_pigis": "21e46395ec02483be3d449330a7d1858a36cd285c4aad83d3da07cec6bfac0f8",
+      "checksum_keimenou": "8a103c052b9ac09ea1f8dcf14f6dfe6f87fc0d0b034948fb01ea8e1ebca963b6",
       "plithos_arthron": 30,
-      "plithos_paragrafon": 69,
+      "plithos_paragrafon": 70,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/n-3446-2006.html",
       "epalithevmeno_fek": true
     },
     "nomos-4070-2012": {
       "checksum_pigis": "7172f0f7cd80071335517312b28a8c694ebc6061bca63c7c6a6faf421c07b9b6",
       "checksum_keimenou": "d013ebb20f330368fb20c02ec1418b3e93abae07281db16e7c44d66f51ce189e",
-      "plithos_arthron": 196,
-      "plithos_paragrafon": 937,
+      "plithos_arthron": 182,
+      "plithos_paragrafon": 884,
       "pigi_url": "file:sources/fek/20120100082.pdf",
+      "epalithevmeno_fek": true
+    },
+    "nomos-4530-2018": {
+      "checksum_pigis": "a60f96de304212b2d09759abc1b4bb3ab62ce16e7bb2d4c3e67b79b7caf6b353",
+      "checksum_keimenou": "cb345fd2685d1a01750b50ddbdcec48d587b10f37a147bb50a8da89fd7699abc",
+      "plithos_arthron": 110,
+      "plithos_paragrafon": 384,
+      "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/nomos-4530-2018-fek-59a-30-3-2018.html",
       "epalithevmeno_fek": true
     },
     "nomos-4784-2021": {
       "checksum_pigis": "593bbd89b7d8aeb2ed4334b0f1037f44ec8ff44a347de201fa3b367eee81b8e6",
       "checksum_keimenou": "0d02c1d46c4c53f4382d076e63bff8bbf78f929aa8ace7fc1b42ee0ff93f1c71",
       "plithos_arthron": 72,
-      "plithos_paragrafon": 342,
+      "plithos_paragrafon": 349,
       "pigi_url": "file:sources/fek/20210100040.pdf",
       "epalithevmeno_fek": true
     },
     "nomos-5113-2024": {
-      "checksum_pigis": "7112191334b411ed6c27f448d405fd8417d52e130d85630bfac9c7c22f44a311",
-      "checksum_keimenou": "4032e195a1b9bd36cf7078a999411e2f26f9b41df3828bf111c3a0f326ba2c35",
+      "checksum_pigis": "e787925c21153ac235d8aa8c2e293fc23ed02febe4adb30a0b95430572422e04",
+      "checksum_keimenou": "c930b02fcc4b61dce0c22664661949407298e3bf76a688efcaafd8bb3958b851",
       "plithos_arthron": 73,
       "plithos_paragrafon": 198,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/n-5113-2024.html",
@@ -75,34 +83,34 @@
       "epalithevmeno_fek": true
     },
     "pd-51-2012": {
-      "checksum_pigis": "6d1f399cbc956f24c66ee417fde5075fd524179c21c14c1bbf3d46e3424d64b5",
-      "checksum_keimenou": "bb60c35eec421761ab5473a58886dd3f7e8cc0f6380c0f7805041617933f2c7a",
+      "checksum_pigis": "2fbc716442e710b44d4bc8e1423b6ec0348914ee7e0d38de79e543e6f34657c0",
+      "checksum_keimenou": "2e7d4433c8c53e3bf5f19f20a9576eb9ea1ffaec386ed0db297ebb2fec971936",
       "plithos_arthron": 22,
-      "plithos_paragrafon": 26,
+      "plithos_paragrafon": 74,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/adeies-odegeses/pd-51-2012.html",
       "epalithevmeno_fek": true
     },
     "pd-74-2008": {
-      "checksum_pigis": "ba6bd80891a8de70b639c1ec3ec5e43abdf67e84a94c5455472d2c88953d4a77",
-      "checksum_keimenou": "7a0bc3c89d1566f2b10e113c56cc62e5a1890f094c159f189a2b603b0805973b",
+      "checksum_pigis": "ad5be28394abf85ddf9dd0489f417c12d3d3a14d60010bd9a97688725ad48715",
+      "checksum_keimenou": "3393b500f8fcb95c69d41987c1bc6e41711cdabf81e8c10679bc55f1ea9b0941",
       "plithos_arthron": 15,
-      "plithos_paragrafon": 15,
+      "plithos_paragrafon": 70,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/sxoles-odegon/pd-74-2008.html",
       "epalithevmeno_fek": true
     },
     "ya-19111-2019": {
-      "checksum_pigis": "e77db5aad5d2ff0f60bbaf7d128a9657d8e8073f076b4bd4c19a3bd8d64da833",
-      "checksum_keimenou": "2cb7855f3ac5cde96e86b385f10f1dbbca0f9093cc4a170c4697b2ef36a1a3cc",
+      "checksum_pigis": "fecc30291877313194cf766927aaefe169561ba81df096f8a85209f2d59468c5",
+      "checksum_keimenou": "9dd243ff1c06d6b480640c4919a4a9e1d9eec594b5980741fd4c1256b55bf9cc",
       "plithos_arthron": 15,
-      "plithos_paragrafon": 17,
+      "plithos_paragrafon": 116,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/tekhnikos-elegkhos-kteo/upourgike-apophase-oik-19111-192-2019.html",
       "epalithevmeno_fek": true
     },
     "ya-50984-2013": {
-      "checksum_pigis": "c27e632518375c7622a2bb58dd864fa7169f6a0b88d6afc4aa7f5f45ba05b357",
-      "checksum_keimenou": "2f54480f04d4352c4d1e6bee62d4cc538be49ca21b269bcbf2e6b21f16e1c5ea",
+      "checksum_pigis": "0c1f0cf4bd3fde5a60fd4dc99b337e55144ec46c0b1ef0fae296ac059f3f3d93",
+      "checksum_keimenou": "0f0cb31cc7d0b3b1a84a4d0009cebdee78e0544bb65a5a3fea851bbf4124deb4",
       "plithos_arthron": 35,
-      "plithos_paragrafon": 37,
+      "plithos_paragrafon": 180,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/adeies-odegeses/ya-a3-oik-50984-7947-2013.html",
       "epalithevmeno_fek": true
     }
