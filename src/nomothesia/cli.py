@@ -4,6 +4,7 @@
     nomothesia status     τι υπάρχει και τι λείπει από το corpus
     nomothesia fetch      λήψη και ενημέρωση των κειμένων
     nomothesia changes    τι άλλαξε από την τελευταία λήψη
+    nomothesia export     knowledge base για φωνητικό agent
     nomothesia syndesmoi  πού οδηγούν οι σύνδεσμοι μιας σελίδας — ανίχνευση πηγών
 """
 
@@ -16,10 +17,17 @@ from rich.console import Console
 from rich.table import Table
 
 from nomothesia import changes as ch
+from nomothesia.export import exagoge_nomothetimatos, gia_knowledge_base
 from nomothesia.extract.html import syndesmoi_apo_html
 from nomothesia.fetch.base import Lipsi, SfalmaLipsis
 from nomothesia.pipeline import SfalmaAgogou, epexergasou
-from nomothesia.registry import Katastasi, Mitroo, Nomothetima, fortose_mitroo
+from nomothesia.registry import (
+    Katastasi,
+    Mitroo,
+    Nomothetima,
+    fortose_mitroo,
+    repo_riza,
+)
 
 app = typer.Typer(
     help="Συλλογή και ενημέρωση της ελληνικής νομοθεσίας για την οδήγηση.",
@@ -187,6 +195,54 @@ def fetch(
 
     if apotyxies:
         raise typer.Exit(code=1)
+
+
+@app.command()
+def export() -> None:
+    """Παράγει το knowledge base για φωνητικό agent, στον φάκελο `export/`.
+
+    Ένα αρχείο ανά νομοθέτημα, κάθε άρθρο με την ταυτότητά του από πάνω και τις
+    συντομογραφίες ανοιγμένες για εκφώνηση. Μόνο ισχύον δίκαιο.
+    """
+    mitroo = _mitroo()
+    epilegmena = gia_knowledge_base(mitroo)
+    katargimena = len(mitroo.nomothetimata) - len(epilegmena)
+
+    pinakas = Table(title="Knowledge base")
+    pinakas.add_column("Νομοθέτημα")
+    pinakas.add_column("Άρθρα", justify="right")
+    pinakas.add_column("Μέγεθος", justify="right")
+    pinakas.add_column("Αρχείο", style="dim")
+
+    apotelesmata = [
+        apotelesma
+        for n in epilegmena
+        if (apotelesma := exagoge_nomothetimatos(n)) is not None
+    ]
+    for a in apotelesmata:
+        pinakas.add_row(
+            a.nomothetima_id,
+            str(a.plithos_arthron),
+            f"{a.charaktires / 1000:.0f}k",
+            str(a.diadromi.relative_to(repo_riza())),
+        )
+
+    console.print(pinakas)
+    console.print(
+        f"\n{len(apotelesmata)} αρχεία στο [bold]export/[/] — "
+        f"{sum(a.plithos_arthron for a in apotelesmata)} άρθρα."
+    )
+    if katargimena:
+        console.print(
+            f"[dim]{katargimena} νομοθετήματα εξαιρέθηκαν ως μη ισχύοντα: ένας "
+            f"agent που απαντά με καταργημένη διάταξη δίνει λάθος απάντηση.[/]"
+        )
+    leipoun = len(epilegmena) - len(apotelesmata)
+    if leipoun:
+        console.print(
+            f"[yellow]⚠[/]  {leipoun} νομοθετήματα λείπουν από το corpus — "
+            f"τρέξε `nomothesia fetch`."
+        )
 
 
 @app.command()
