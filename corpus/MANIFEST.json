@@ -1,6 +1,6 @@
 {
   "enimerosi": "2026-08-12",
-  "plithos": 9,
+  "plithos": 11,
   "nomothetimata": {
     "kok-5209-2025": {
       "checksum_pigis": "2ae6d4b3e09f5a25090cdf20ceba5afe98f596ac618777d9b9dbcc232ca4d51b",
@@ -34,12 +34,28 @@
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/n-3446-2006.html",
       "epalithevmeno_fek": true
     },
+    "nomos-4784-2021": {
+      "checksum_pigis": "593bbd89b7d8aeb2ed4334b0f1037f44ec8ff44a347de201fa3b367eee81b8e6",
+      "checksum_keimenou": "ec91083d11f770c9b388b6f8f2c383ea903f4589ca8a2d05294d0a497e942dc6",
+      "plithos_arthron": 72,
+      "plithos_paragrafon": 342,
+      "pigi_url": "file:sources/fek/20210100040.pdf",
+      "epalithevmeno_fek": true
+    },
     "nomos-5113-2024": {
       "checksum_pigis": "7112191334b411ed6c27f448d405fd8417d52e130d85630bfac9c7c22f44a311",
       "checksum_keimenou": "4032e195a1b9bd36cf7078a999411e2f26f9b41df3828bf111c3a0f326ba2c35",
       "plithos_arthron": 73,
       "plithos_paragrafon": 198,
       "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/n-5113-2024.html",
+      "epalithevmeno_fek": true
+    },
+    "nomos-5322-2026": {
+      "checksum_pigis": "1db59323974e9523d26c6a37293428703671d7f27247f0045178c54a57f82ccf",
+      "checksum_keimenou": "193bab5cd1501899f3caa3eb1d458eb4c016cab47007fd5228f2304733e471c0",
+      "plithos_arthron": 9,
+      "plithos_paragrafon": 29,
+      "pigi_url": "file:sources/fek/20260100117.pdf",
       "epalithevmeno_fek": true
     },
     "pd-51-2012": {

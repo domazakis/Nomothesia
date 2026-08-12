@@ -78,14 +78,13 @@ nomothetimata:
       tropopoiei: [kok-5209-2025]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20260100117"}
+      - {typos: topiko_fek, url: "file:sources/fek/20260100117.pdf"}
     simeioseis: >-
       Μόνο τα άρθρα 73-81 αφορούν την οδήγηση. Ο fetcher κατεβάζει ολόκληρο το
       ΦΕΚ αλλά η εξαγωγή περιορίζεται στα άρθρα του `relevanta_arthra`.
-      ΕΚΚΡΕΜΕΙ ΠΗΓΗ: το ΦΕΚ δεν κατεβαίνει και δεν βρέθηκε εναλλακτική. Είναι
-      νόμος κοινωνικής πολιτικής, οπότε δεν κατατάσσεται στα αυτοκίνητα και το
-      μοτίβο διευθύνσεων των υπολοίπων δεν ισχύει. Χωρίς αυτόν, το corpus
-      περιγράφει τον ΚΟΚ όπως δημοσιεύθηκε, χωρίς τις τροποποιήσεις του 2026
-      για τα Ε.Π.Η.Ο.
+      Το ΦΕΚ δεν κατεβαίνει από το et.gr και ο νόμος δεν κατατάσσεται στα
+      αυτοκίνητα σε καμία κωδικοποιημένη πηγή — είναι νόμος κοινωνικής
+      πολιτικής. Το αντίγραφο ΦΕΚ στο repository είναι η μόνη διαθέσιμη οδός.
 
   - id: kok-2696-1999
     titlos: Κύρωση του Κώδικα Οδικής Κυκλοφορίας
@@ -252,6 +251,7 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5322-2026]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20210100040"}
+      - {typos: topiko_fek, url: "file:sources/fek/20210100040.pdf"}
       - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/sygkoinonies-metafores/nomos-4784-2021.html"}
 
   # ─────────────────────────────────────────────────────────────────────────
@@ -279,7 +279,14 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5113-2024]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19860100110"}
+      - {typos: topiko_fek, url: "file:sources/fek/19860100110.pdf"}
       - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/pd-237-1986.html"}
+    simeioseis: >-
+      Το ΦΕΚ του 1986 είναι σαρωμένο, χωρίς επίπεδο κειμένου: το αντίγραφο στο
+      repository υπάρχει αλλά δεν διαβάζεται χωρίς OCR. Η κωδικοποιημένη σελίδα
+      υπάρχει επίσης, αλλά ο parser δεν εντοπίζει άρθρα σε αυτήν. Είναι ο
+      πυρήνας της υποχρεωτικής ασφάλισης και το σημαντικότερο κενό του corpus
+      μετά τα ενωσιακά.
 
   - id: nomos-489-1976
     titlos: Περί υποχρεωτικής ασφαλίσεως της εξ ατυχημάτων αυτοκινήτων αστικής ευθύνης
@@ -363,6 +370,13 @@ nomothetimata:
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20120100082"}
       - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-4070-2012.html"}
+    simeioseis: >-
+      Το αντίγραφο ΦΕΚ βρίσκεται στο sources/fek/20120100082.pdf αλλά ΔΕΝ
+      δηλώνεται ως πηγή επίτηδες: η εξαγωγή πλέκει τις δύο στήλες και χάνει τα
+      κενά, βγάζοντας επικεφαλίδες όπως «Άρθρο 19 καιτηναποφυγήπαρεμβολών». Από
+      740 χιλιάδες χαρακτήρες εντοπίζονται δεκαπέντε άρθρα. Δεκαπέντε
+      αλλοιωμένα άρθρα στο knowledge base είναι χειρότερα από κανένα, οπότε
+      μένει εκτός μέχρι να διορθωθεί η ανίχνευση στηλών γι' αυτή τη διάταξη.
 
   - id: nomos-3446-2006
     titlos: >-
