@@ -47,7 +47,7 @@ nomothetimata:
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20250100100"}
       - {typos: topiko_fek, url: "file:sources/fek/20250100100.pdf"}
-      - {typos: kodikopoiimeno_html, url: "https://www.kodiko.gr/nomothesia/document/1181157/nomos-5209-2025"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-5209-2025.html"}
     simeioseis: >-
       Δημοσιεύθηκε 13-6-2025. Τα Μέρη Α΄ έως Δ΄ τέθηκαν σε ισχύ τρεις μήνες
       μετά τη δημοσίευση, δηλαδή 13-9-2025, με εξαίρεση τις διατάξεις της
@@ -78,6 +78,7 @@ nomothetimata:
       tropopoiei: [kok-5209-2025]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20260100117"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-5322-2026.html"}
     simeioseis: >-
       Μόνο τα άρθρα 73-81 αφορούν την οδήγηση. Ο fetcher κατεβάζει ολόκληρο το
       ΦΕΚ αλλά η εξαγωγή περιορίζεται στα άρθρα του `relevanta_arthra`.
@@ -101,6 +102,7 @@ nomothetimata:
       antikatastathike_apo: [kok-5209-2025]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19990100057"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-2696-1999.html"}
       - {typos: kodikopoiimeno_html, url: "https://www.kodiko.gr/nomothesia/document/46357/nomos-2696-1999"}
     simeioseis: >-
       ΠΡΟΣΟΧΗ: δεν είναι το ισχύον δίκαιο. Κάθε απάντηση που στηρίζεται σε αυτόν
@@ -246,6 +248,7 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5322-2026]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20210100040"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-4784-2021.html"}
 
   # ─────────────────────────────────────────────────────────────────────────
   # ΘΕΜΑΤΙΚΗ: ΑΣΦΑΛΙΣΗ ΚΑΙ ΤΕΛΗ
@@ -272,6 +275,7 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5113-2024]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19860100110"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/pd-237-1986.html"}
 
   - id: nomos-489-1976
     titlos: Περί υποχρεωτικής ασφαλίσεως της εξ ατυχημάτων αυτοκινήτων αστικής ευθύνης
@@ -288,6 +292,7 @@ nomothetimata:
       kodikopoiithike_apo: [pd-237-1986]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19760100331"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-489-1976.html"}
       - {typos: pdf_alli_pigi, url: "https://www.bankofgreece.gr/RelatedDocuments/law489gr.pdf"}
 
   - id: nomos-5113-2024
@@ -308,6 +313,7 @@ nomothetimata:
       tropopoiei: [pd-237-1986]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20240100096"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-5113-2024.html"}
 
   - id: nomos-2960-2001
     titlos: Εθνικός Τελωνειακός Κώδικας
@@ -325,6 +331,7 @@ nomothetimata:
       άρθρα που αφορούν οχήματα είναι σχετικά.
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20010100265"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-2960-2001.html"}
     simeioseis: >-
       Πολύ μεγάλος νόμος γενικού τελωνειακού περιεχομένου. Χρειάζεται φιλτράρισμα
       στα σχετικά κεφάλαια πριν μπει στο corpus.
@@ -351,6 +358,7 @@ nomothetimata:
       προϋποθέσεις οδηγών, όροι λειτουργίας.
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20120100082"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-4070-2012.html"}
 
   - id: nomos-3446-2006
     titlos: >-
@@ -370,6 +378,7 @@ nomothetimata:
       παραβάσεις οδικών εμπορευματικών μεταφορών.
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20060100049"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-3446-2006.html"}
 
   # ─────────────────────────────────────────────────────────────────────────
   # ΘΕΜΑΤΙΚΗ: ΕΝΩΣΙΑΚΟ ΔΙΚΑΙΟ
