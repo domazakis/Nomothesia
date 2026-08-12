@@ -281,3 +281,19 @@ def test_to_sympliroma_den_sozei_pigi_pou_apetyche(kok, deigma):
 
     assert apotelesma.pigi_url == "https://pigi/word"
     assert apotelesma.plithos_arthron == 5
+
+
+def test_arthro_grammeno_dyo_fores_krataei_tin_proti_grafi(kok, deigma):
+    """Ένας νόμος δεν έχει δύο άρθρα 5.
+
+    Το αντίγραφο του π.δ. 237/1986 γράφει τα άρθρα 1 έως 10 δύο φορές. Χωρίς
+    έλεγχο, το corpus αποκτά δύο εγγραφές με το ίδιο αναγνωριστικό — και μια
+    βάση ανάκτησης το ίδιο απόσπασμα δύο φορές.
+    """
+    kok.piges = [Pigi(typos=TyposPigis.DOC_ALLI_PIGI, url="https://pigi/word")]
+    lipsi = LipsiAnaUrl({"https://pigi/word": deigma + b"\n" + deigma})
+
+    apotelesma = epexergasou(kok, lipsi)
+
+    assert apotelesma.plithos_arthron == 4
+    assert any("δύο φορές" in p for p in apotelesma.proeidopoiiseis)

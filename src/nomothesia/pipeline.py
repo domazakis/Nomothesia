@@ -150,6 +150,36 @@ def _minima_ptosis(pigi) -> str:
     )
 
 
+def _choris_diplotypa(
+    arthra: list[Arthro], proeidopoiiseis: list[str]
+) -> list[Arthro]:
+    """Κρατά μία φορά κάθε άρθρο. Ένας νόμος δεν έχει δύο άρθρα 5.
+
+    Το αντίγραφο του π.δ. 237/1986 γράφει τα άρθρα 1 έως 10 δύο φορές,
+    πανομοιότυπα. Στο corpus αυτό γίνεται διπλή εγγραφή με το ίδιο
+    αναγνωριστικό — και σε βάση ανάκτησης, το ίδιο απόσπασμα δύο φορές.
+
+    Κρατιέται η πρώτη εμφάνιση: είναι εκείνη που ακολουθεί τη δομή του
+    εγγράφου, με το Μέρος και το Κεφάλαιο στα οποία ανήκει.
+    """
+    krata: list[Arthro] = []
+    idomena: set[str] = set()
+    diplotypa: list[str] = []
+    for a in arthra:
+        if a.arithmos in idomena:
+            diplotypa.append(a.arithmos)
+            continue
+        idomena.add(a.arithmos)
+        krata.append(a)
+
+    if diplotypa:
+        proeidopoiiseis.append(
+            "η πηγή γράφει δύο φορές τα άρθρα " + ", ".join(dict.fromkeys(diplotypa))
+            + " — κρατήθηκε η πρώτη γραφή"
+        )
+    return krata
+
+
 def _me_sympliromata(
     n: Nomothetima, arthra: list[Arthro], lipsi: Lipsi, proeidopoiiseis: list[str]
 ) -> list[Arthro]:
@@ -237,7 +267,7 @@ def _apo_pigi(
             "ελέγξτε το pdf_id στο registry.yaml"
         )
 
-    arthra = _filtrare_arthra(n, analyse_domi(keimeno))
+    arthra = _choris_diplotypa(_filtrare_arthra(n, analyse_domi(keimeno)), proeidopoiiseis)
     if not arthra:
         raise SfalmaAgogou(
             "δεν εντοπίστηκε κανένα άρθρο. Πιθανή αιτία: αλλαγή "
