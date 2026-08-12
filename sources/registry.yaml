@@ -46,7 +46,8 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5322-2026]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20250100100"}
-      - {typos: kodikopoiimeno_html, url: "https://www.kodiko.gr/nomothesia/document/1181157/nomos-5209-2025"}
+      - {typos: topiko_fek, url: "file:sources/fek/20250100100.pdf"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-5209-2025.html"}
     simeioseis: >-
       Δημοσιεύθηκε 13-6-2025. Τα Μέρη Α΄ έως Δ΄ τέθηκαν σε ισχύ τρεις μήνες
       μετά τη δημοσίευση, δηλαδή 13-9-2025, με εξαίρεση τις διατάξεις της
@@ -77,9 +78,13 @@ nomothetimata:
       tropopoiei: [kok-5209-2025]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20260100117"}
+      - {typos: topiko_fek, url: "file:sources/fek/20260100117.pdf"}
     simeioseis: >-
       Μόνο τα άρθρα 73-81 αφορούν την οδήγηση. Ο fetcher κατεβάζει ολόκληρο το
       ΦΕΚ αλλά η εξαγωγή περιορίζεται στα άρθρα του `relevanta_arthra`.
+      Το ΦΕΚ δεν κατεβαίνει από το et.gr και ο νόμος δεν κατατάσσεται στα
+      αυτοκίνητα σε καμία κωδικοποιημένη πηγή — είναι νόμος κοινωνικής
+      πολιτικής. Το αντίγραφο ΦΕΚ στο repository είναι η μόνη διαθέσιμη οδός.
 
   - id: kok-2696-1999
     titlos: Κύρωση του Κώδικα Οδικής Κυκλοφορίας
@@ -100,6 +105,7 @@ nomothetimata:
       antikatastathike_apo: [kok-5209-2025]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19990100057"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-2696-1999.html"}
       - {typos: kodikopoiimeno_html, url: "https://www.kodiko.gr/nomothesia/document/46357/nomos-2696-1999"}
     simeioseis: >-
       ΠΡΟΣΟΧΗ: δεν είναι το ισχύον δίκαιο. Κάθε απάντηση που στηρίζεται σε αυτόν
@@ -245,6 +251,8 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5322-2026]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20210100040"}
+      - {typos: topiko_fek, url: "file:sources/fek/20210100040.pdf"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/sygkoinonies-metafores/nomos-4784-2021.html"}
 
   # ─────────────────────────────────────────────────────────────────────────
   # ΘΕΜΑΤΙΚΗ: ΑΣΦΑΛΙΣΗ ΚΑΙ ΤΕΛΗ
@@ -271,6 +279,49 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5113-2024]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19860100110"}
+      - {typos: topiko_fek, url: "file:sources/fek/19860100110.pdf"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/pd-237-1986.html"}
+      # Ελλιπές: λείπουν τα άρθρα 11-24. Τα καλύπτει το συμπλήρωμα.
+      - {typos: doc_alli_pigi, url: "https://eeamarketfiles.blob.core.windows.net/blob/assets/images/ekpaideutis/pd_237_asfalies_autokinit.doc"}
+      - {typos: sympliroma, url: "file:sources/keimena/pd-237-1986-arthra-11-24.txt"}
+    simeioseis: >-
+      Οι επίσημοι δρόμοι είναι όλοι κλειστοί, ο καθένας για διαφορετικό λόγο.
+      Το et.gr ανακατευθύνει σε πιστοποιητικό τείχους προστασίας. Το ΦΕΚ του
+      1986 είναι σαρωμένο, χωρίς επίπεδο κειμένου, και χρειάζεται OCR. Η
+      κωδικοποιημένη σελίδα βρίσκεται πίσω από συνδρομή: για μη συνδεδεμένο
+      επισκέπτη επιστρέφει μόνο τίτλο και ετικέτες, γι' αυτό ο parser «δεν
+      εντόπιζε άρθρα» — δεν υπήρχαν. Δοκιμάστηκε και το lawspot.gr, που έχει
+      το πλήρες κείμενο ανά άρθρο: κλείνει τη σύνδεση χωρίς να απαντήσει,
+      ακόμη και με πλήρεις κεφαλίδες HTTP. Δοκιμάστηκε και σελίδα ευρετηρίου
+      και σελίδα μεμονωμένου άρθρου, από δύο διαφορετικά δίκτυα — το ίδιο.
+      Δεν στέλνει «403»· κόβει τη γραμμή. Είναι σκόπιμος αποκλεισμός
+      αυτοματοποιημένης πρόσβασης, όχι τεχνικό πρόβλημα, και δεν
+      παρακάμπτεται με μεταμφίεση σε browser.
+
+      Κύρια πηγή είναι πλέον αντίγραφο σε παλαιό δυαδικό Word, από
+      εκπαιδευτικό υλικό της ασφαλιστικής αγοράς. Κατεβαίνει και διαβάζεται
+      κανονικά, αλλά είναι ελλιπές: οι δείκτες της βάσης ΝΟΜΟΣ μέσα στο ίδιο
+      το έγγραφο δείχνουν άρθρα 1 έως 10 και 25 έως 58, ενώ τα 1 έως 10 είναι
+      γραμμένα δύο φορές πανομοιότυπα. Τα άρθρα 11 έως 24 έρχονται από
+      συμπλήρωμα μέσα στο repository, αντιγραμμένα χειροκίνητα από το
+      lawspot.gr, και το αποτέλεσμα είναι πλήρες: 66 άρθρα, χωρίς κενά.
+
+      Τα άρθρα 11-24 όμως φέρουν την ΑΡΧΙΚΗ ΔΙΑΤΥΠΩΣΗ ΤΟΥ 1986, όχι
+      κωδικοποιημένη. Η πηγή τα σημαίνει όλα «Τελευταία Τροποποίηση:
+      18.07.1986» και τα ποσά είναι σε δραχμές — πρόστιμο «μέχρι 30.000 δρχ.»
+      στο άρθρο 12, «πεντακοσίων μέχρι δύο χιλιάδων δραχμών» στο άρθρο 13.
+      Έκτοτε έχουν τροποποιηθεί επανειλημμένα· το άρθρο 19, που ορίζει πότε
+      πληρώνει το Επικουρικό Κεφάλαιο, τροποποιήθηκε τελευταία με τον ν.
+      5113/2024 (παρ. 1, 3 και 5), ο οποίος υπάρχει χωριστά στο corpus.
+
+      Το πλαίσιο είναι σωστό — ποιος συνιστά το Επικουρικό Κεφάλαιο, πότε
+      αποζημιώνει, ποιος είναι μέλος. Τα ποσά και οι προθεσμίες δεν είναι.
+    prosochi: >-
+      Τα άρθρα 11 έως 24 φέρουν τη διατύπωση του 1986 και τα ποσά τους είναι
+      σε δραχμές. Έχουν τροποποιηθεί έκτοτε — το άρθρο 19, για το πότε
+      πληρώνει το Επικουρικό Κεφάλαιο, τελευταία με τον νόμο 5113 του 2024.
+      Απάντηση που στηρίζεται σε αυτά τα άρθρα πρέπει να λέει ότι τα ποσά και
+      οι προθεσμίες χρειάζονται επιβεβαίωση από την ισχύουσα διατύπωση.
 
   - id: nomos-489-1976
     titlos: Περί υποχρεωτικής ασφαλίσεως της εξ ατυχημάτων αυτοκινήτων αστικής ευθύνης
@@ -287,6 +338,7 @@ nomothetimata:
       kodikopoiithike_apo: [pd-237-1986]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=19760100331"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-489-1976.html"}
       - {typos: pdf_alli_pigi, url: "https://www.bankofgreece.gr/RelatedDocuments/law489gr.pdf"}
 
   - id: nomos-5113-2024
@@ -307,6 +359,7 @@ nomothetimata:
       tropopoiei: [pd-237-1986]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20240100096"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-5113-2024.html"}
 
   - id: nomos-2960-2001
     titlos: Εθνικός Τελωνειακός Κώδικας
@@ -324,6 +377,7 @@ nomothetimata:
       άρθρα που αφορούν οχήματα είναι σχετικά.
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20010100265"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-2960-2001.html"}
     simeioseis: >-
       Πολύ μεγάλος νόμος γενικού τελωνειακού περιεχομένου. Χρειάζεται φιλτράρισμα
       στα σχετικά κεφάλαια πριν μπει στο corpus.
@@ -331,6 +385,32 @@ nomothetimata:
   # ─────────────────────────────────────────────────────────────────────────
   # ΘΕΜΑΤΙΚΗ: ΕΠΑΓΓΕΛΜΑΤΙΚΗ ΟΔΗΓΗΣΗ
   # ─────────────────────────────────────────────────────────────────────────
+
+  - id: nomos-4530-2018
+    titlos: Ρυθμίσεις θεμάτων μεταφορών και άλλες διατάξεις
+    syntomos_titlos: Ε.Δ.Χ. — υποχρεώσεις οδηγών
+    typos: nomos
+    arithmos: "4530"
+    etos: 2018
+    fek: {teuxos: A, arithmos: 59, imerominia: 2018-03-30}
+    thematiki: epaggelmatiki-odigisi
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Το Μέρος Α΄ ρυθμίζει τη λειτουργία των Επιβατηγών Δημόσιας Χρήσης
+      αυτοκινήτων: υποχρεώσεις και απαγορεύσεις για τους οδηγούς ΤΑΞΙ, ειδικής
+      μίσθωσης και ειδικών μεταφορών, κόμιστρα, συμπεριφορά προς επιβάτες.
+    scheseis:
+      tropopoiei: [nomos-4070-2012]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20180100059"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/nomos-4530-2018-fek-59a-30-3-2018.html"}
+    simeioseis: >-
+      Νόμος γενικού περιεχομένου· μόνο το Μέρος Α΄ αφορά την οδήγηση. Δεν
+      περιορίζεται με `relevanta_arthra` γιατί τα όρια του Μέρους δεν
+      επαληθεύτηκαν — προτιμότερο λίγο επιπλέον κείμενο από αποκομμένες
+      διατάξεις.
 
   - id: nomos-4070-2012
     titlos: >-
@@ -350,6 +430,13 @@ nomothetimata:
       προϋποθέσεις οδηγών, όροι λειτουργίας.
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20120100082"}
+      - {typos: topiko_fek, url: "file:sources/fek/20120100082.pdf"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-4070-2012.html"}
+    simeioseis: >-
+      Το ΦΕΚ αυτό αποκάλυψε ότι το αυλάκι των στηλών δεν είναι πάντα στο μέσο
+      της σελίδας: εδώ βρίσκεται στο 53% του πλάτους. Πριν διορθωθεί η
+      ανίχνευση, οι δύο στήλες διαβάζονταν πλεγμένες και από 740 χιλιάδες
+      χαρακτήρες έβγαιναν δεκαπέντε άρθρα αντί για 196.
 
   - id: nomos-3446-2006
     titlos: >-
@@ -369,6 +456,7 @@ nomothetimata:
       παραβάσεις οδικών εμπορευματικών μεταφορών.
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20060100049"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-3446-2006.html"}
 
   # ─────────────────────────────────────────────────────────────────────────
   # ΘΕΜΑΤΙΚΗ: ΕΝΩΣΙΑΚΟ ΔΙΚΑΙΟ

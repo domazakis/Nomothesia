@@ -6,6 +6,7 @@ import hashlib
 import logging
 from dataclasses import dataclass
 
+from nomothesia.extract.doc import einai_doc, keimeno_apo_doc
 from nomothesia.extract.html import keimeno_apo_html
 from nomothesia.extract.pdf import exei_epipedo_keimenou, keimeno_apo_pdf
 from nomothesia.fetch.base import Lipsi, SfalmaLipsis
@@ -26,10 +27,15 @@ PROTERAIOTITA_PIGON: dict[Typos, tuple[TyposPigis, ...]] = {
     Typos.KANONISMOS_EE: (TyposPigis.EURLEX_HTML,),
     Typos.ODIGIA_EE: (TyposPigis.EURLEX_HTML,),
 }
+# Το ζωντανό ΦΕΚ προηγείται του τοπικού αντιγράφου, ώστε η επίσημη πηγή να
+# ξαναδοκιμάζεται σε κάθε εκτέλεση και να επανέλθει μόνη της όταν διορθωθεί.
+# Το αντίγραφο έπεται αμέσως: είναι το ίδιο έγγραφο, όχι κωδικοποίηση τρίτου.
 PROTERAIOTITA_EX_ORISMOU = (
     TyposPigis.FEK_PDF,
+    TyposPigis.TOPIKO_FEK,
     TyposPigis.KODIKOPOIIMENO_HTML,
     TyposPigis.PDF_ALLI_PIGI,
+    TyposPigis.DOC_ALLI_PIGI,
 )
 
 
@@ -49,15 +55,20 @@ class ApotelesmaAgogou:
     proeidopoiiseis: list[str]
 
 
-def _epilexe_pigi(n: Nomothetima):
+def _seira_pigon(n: Nomothetima) -> list:
+    """Όλες οι πηγές του νομοθετήματος, με την προτιμώμενη πρώτη.
+
+    Επιστρέφει σειρά και όχι μία πηγή, γιατί οι εναλλακτικές υπάρχουν ακριβώς
+    για να χρησιμοποιηθούν: το et.gr πέφτει, μπλοκάρει διευθύνσεις ή αλλάζει
+    endpoint, και τότε η κωδικοποιημένη έκδοση είναι προτιμότερη από το τίποτα.
+    """
+    ypopsifies = [p for p in n.piges if p.typos is not TyposPigis.SYMPLIROMA]
     seira = PROTERAIOTITA_PIGON.get(n.typos, PROTERAIOTITA_EX_ORISMOU)
-    for typos in seira:
-        for pigi in n.piges:
-            if pigi.typos is typos:
-                return pigi
-    if n.piges:
-        return n.piges[0]
-    raise SfalmaAgogou(f"{n.id}: καμία διαθέσιμη πηγή")
+    taxinomimenes = [pigi for typos in seira for pigi in ypopsifies if pigi.typos is typos]
+    ypoloipes = [pigi for pigi in ypopsifies if pigi not in taxinomimenes]
+    if not (taxinomimenes or ypoloipes):
+        raise SfalmaAgogou(f"{n.id}: καμία διαθέσιμη πηγή")
+    return taxinomimenes + ypoloipes
 
 
 def _epalithefse_fek(n: Nomothetima, akatergasto: str) -> bool:
@@ -93,28 +104,161 @@ def _filtrare_arthra(n: Nomothetima, arthra: list[Arthro]) -> list[Arthro]:
 def epexergasou(
     n: Nomothetima, lipsi: Lipsi, *, agnoise_cache: bool = False
 ) -> ApotelesmaAgogou:
-    """Τρέχει ολόκληρο τον αγωγό για ένα νομοθέτημα και γράφει τα αρχεία του."""
+    """Τρέχει τον αγωγό για ένα νομοθέτημα και γράφει τα αρχεία του.
+
+    Δοκιμάζει τις πηγές με τη σειρά προτίμησης και σταματά στην πρώτη που
+    αποδίδει κείμενο με άρθρα. Η πτώση σε εναλλακτική πηγή καταγράφεται ως
+    προειδοποίηση: το κείμενο είναι χρήσιμο, αλλά δεν προέρχεται από το ΦΕΚ.
+    """
+    apotyxies: list[tuple[str, str]] = []
+
+    for seira, pigi in enumerate(_seira_pigon(n)):
+        try:
+            apotelesma = _apo_pigi(n, pigi, lipsi, agnoise_cache=agnoise_cache)
+        except SfalmaAgogou as exc:
+            apotyxies.append((pigi.typos.value, str(exc)))
+            continue
+
+        if seira:
+            apotelesma.proeidopoiiseis.insert(0, _minima_ptosis(pigi))
+        return apotelesma
+
+    if len(apotyxies) == 1:
+        raise SfalmaAgogou(f"{n.id}: {apotyxies[0][1]}")
+    perigrafes = "; ".join(f"{typos}: {minima}" for typos, minima in apotyxies)
+    raise SfalmaAgogou(
+        f"{n.id}: καμία από τις {len(apotyxies)} πηγές δεν απέδωσε κείμενο — "
+        f"{perigrafes}"
+    )
+
+
+def _minima_ptosis(pigi) -> str:
+    """Τι σημαίνει για τον αναγνώστη ότι χρησιμοποιήθηκε εναλλακτική πηγή.
+
+    Το τοπικό αντίγραφο ΦΕΚ ξεχωρίζει: το κείμενο εξακολουθεί να είναι το
+    επίσημο, απλώς δεν κατέβηκε τώρα. Μια κωδικοποίηση τρίτου είναι άλλο
+    πράγμα και δεν πρέπει να τα μπερδεύει κανείς.
+    """
+    if pigi.typos is TyposPigis.TOPIKO_FEK:
+        return (
+            "το et.gr δεν απάντησε — το κείμενο προέρχεται από το αντίγραφο "
+            f"ΦΕΚ του repository ({pigi.url}), που είναι το ίδιο έγγραφο"
+        )
+    return (
+        f"η προτιμώμενη πηγή απέτυχε — το κείμενο προέρχεται από "
+        f"{pigi.typos.value} ({pigi.url})"
+    )
+
+
+def _choris_diplotypa(
+    arthra: list[Arthro], proeidopoiiseis: list[str]
+) -> list[Arthro]:
+    """Κρατά μία φορά κάθε άρθρο. Ένας νόμος δεν έχει δύο άρθρα 5.
+
+    Το αντίγραφο του π.δ. 237/1986 γράφει τα άρθρα 1 έως 10 δύο φορές,
+    πανομοιότυπα. Στο corpus αυτό γίνεται διπλή εγγραφή με το ίδιο
+    αναγνωριστικό — και σε βάση ανάκτησης, το ίδιο απόσπασμα δύο φορές.
+
+    Κρατιέται η πρώτη εμφάνιση: είναι εκείνη που ακολουθεί τη δομή του
+    εγγράφου, με το Μέρος και το Κεφάλαιο στα οποία ανήκει.
+    """
+    krata: list[Arthro] = []
+    idomena: set[str] = set()
+    diplotypa: list[str] = []
+    for a in arthra:
+        if a.arithmos in idomena:
+            diplotypa.append(a.arithmos)
+            continue
+        idomena.add(a.arithmos)
+        krata.append(a)
+
+    if diplotypa:
+        proeidopoiiseis.append(
+            "η πηγή γράφει δύο φορές τα άρθρα " + ", ".join(dict.fromkeys(diplotypa))
+            + " — κρατήθηκε η πρώτη γραφή"
+        )
+    return krata
+
+
+def _me_sympliromata(
+    n: Nomothetima, arthra: list[Arthro], lipsi: Lipsi, proeidopoiiseis: list[str]
+) -> list[Arthro]:
+    """Προσθέτει τα άρθρα που λείπουν από την κύρια πηγή.
+
+    Καμία πηγή του π.δ. 237/1986 δεν δίνει και τα πενήντα οκτώ άρθρα του: το
+    μόνο αντίγραφο που κατεβαίνει σταματά στο δέκα και ξαναρχίζει στο είκοσι
+    πέντε. Το συμπλήρωμα καλύπτει το κενό χωρίς να αντικαταστήσει την κύρια
+    πηγή, η οποία παραμένει καλύτερη για όσα άρθρα έχει.
+
+    Γι' αυτό ακριβώς ό,τι ήδη υπάρχει **δεν** αντικαθίσταται: το συμπλήρωμα
+    γεμίζει τρύπες, δεν ξαναγράφει άρθρα.
+    """
+    sympliromata = [p for p in n.piges if p.typos is TyposPigis.SYMPLIROMA]
+    if not sympliromata:
+        return arthra
+
+    yparxonta = {a.arithmos for a in arthra}
+    prostheta: list[Arthro] = []
+    for pigi in sympliromata:
+        try:
+            apotelesma = lipsi.kateveste(pigi.url)
+        except SfalmaLipsis as exc:
+            proeidopoiiseis.append(f"το συμπλήρωμα {pigi.url} δεν διαβάστηκε: {exc}")
+            continue
+        keimeno = kanonikopoiise(apotelesma.perieksomeno.decode("utf-8"))
+        nea = [a for a in analyse_domi(keimeno) if a.arithmos not in yparxonta]
+        yparxonta.update(a.arithmos for a in nea)
+        prostheta.extend(nea)
+
+    if not prostheta:
+        return arthra
+
+    proeidopoiiseis.append(
+        "άρθρα από συμπλήρωμα, όχι από την κύρια πηγή: "
+        + ", ".join(a.arithmos for a in prostheta)
+    )
+    # Η σειρά του εγγράφου δεν ισχύει πια — τα συμπληρωμένα άρθρα θα έμεναν
+    # στο τέλος. Ταξινομούνται αριθμητικά, με το γράμμα (17Α) μετά το σκέτο.
+    return sorted(arthra + prostheta, key=_kleidi_seiras)
+
+
+def _kleidi_seiras(a: Arthro) -> tuple[int, str]:
+    arithmitiko = "".join(ch for ch in a.arithmos if ch.isdigit())
+    return (int(arithmitiko) if arithmitiko else 0, a.arithmos)
+
+
+def _apo_pigi(
+    n: Nomothetima, pigi, lipsi: Lipsi, *, agnoise_cache: bool
+) -> ApotelesmaAgogou:
+    """Ολόκληρος ο αγωγός πάνω σε **μία** πηγή. Σφάλμα σημαίνει «δοκίμασε άλλη»."""
     proeidopoiiseis: list[str] = []
-    pigi = _epilexe_pigi(n)
 
     try:
         apotelesma = lipsi.kateveste(pigi.url, agnoise_cache=agnoise_cache)
     except SfalmaLipsis as exc:
-        raise SfalmaAgogou(f"{n.id}: {exc}") from exc
+        raise SfalmaAgogou(str(exc)) from exc
 
     if apotelesma.einai_pdf:
         if not exei_epipedo_keimenou(apotelesma.perieksomeno):
             raise SfalmaAgogou(
-                f"{n.id}: το PDF δεν έχει επίπεδο κειμένου (σαρωμένο). "
-                f"Χρειάζεται OCR — εγκατάσταση με `pip install 'nomothesia[ocr]'`."
+                "το PDF δεν έχει επίπεδο κειμένου (σαρωμένο). "
+                "Χρειάζεται OCR — εγκατάσταση με `pip install 'nomothesia[ocr]'`."
             )
         akatergasto = keimeno_apo_pdf(apotelesma.perieksomeno)
+    elif einai_doc(apotelesma.perieksomeno):
+        akatergasto = keimeno_apo_doc(apotelesma.perieksomeno)
     else:
         akatergasto = keimeno_apo_html(apotelesma.perieksomeno)
 
     keimeno = kanonikopoiise(akatergasto)
     if not keimeno.strip():
-        raise SfalmaAgogou(f"{n.id}: δεν εξήχθη καθόλου κείμενο από {pigi.url}")
+        # Το μέγεθος ξεχωρίζει το «κατέβηκε σελίδα σφάλματος» από το «κατέβηκε ο
+        # νόμος και δεν ξέρουμε να τον διαβάσουμε». Χωρίς αυτό, τα δύο μοιάζουν.
+        raise SfalmaAgogou(
+            f"δεν εξήχθη καθόλου κείμενο από {pigi.url} "
+            f"({len(apotelesma.perieksomeno)} bytes, "
+            f"{apotelesma.typos_perieksomenou or 'άγνωστος τύπος'})"
+        )
 
     epalithevmeno = _epalithefse_fek(n, akatergasto)
     if n.fek and not epalithevmeno:
@@ -123,12 +267,20 @@ def epexergasou(
             "ελέγξτε το pdf_id στο registry.yaml"
         )
 
-    arthra = _filtrare_arthra(n, analyse_domi(keimeno))
+    arthra = _choris_diplotypa(_filtrare_arthra(n, analyse_domi(keimeno)), proeidopoiiseis)
     if not arthra:
         raise SfalmaAgogou(
-            f"{n.id}: δεν εντοπίστηκε κανένα άρθρο. Πιθανή αιτία: αλλαγή "
-            f"διάταξης στην πηγή ή λάθος URL."
+            "δεν εντοπίστηκε κανένα άρθρο. Πιθανή αιτία: αλλαγή "
+            "διάταξης στην πηγή ή λάθος URL."
         )
+
+    # Μετά τον έλεγχο, ποτέ πριν. Το συμπλήρωμα προσθέτει σε πηγή που πέτυχε·
+    # αν εφαρμοζόταν νωρίτερα, θα κρατούσε ζωντανή μια πηγή που δεν απέδωσε
+    # τίποτα. Ακριβώς αυτό συνέβη: η κωδικοποιημένη σελίδα του π.δ. 237/1986
+    # είναι πίσω από συνδρομή και δίνει μηδέν άρθρα, αλλά με τα δεκατέσσερα
+    # του συμπληρώματος έμοιαζε επιτυχημένη — και ο αγωγός δεν έφτασε ποτέ
+    # στο αντίγραφο Word που έχει τα υπόλοιπα σαράντα τέσσερα.
+    arthra = _me_sympliromata(n, arthra, lipsi, proeidopoiiseis)
 
     fakelos = n.fakelos_corpus()
     fakelos.mkdir(parents=True, exist_ok=True)

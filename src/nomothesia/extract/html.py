@@ -37,3 +37,30 @@ def keimeno_apo_html(dedomena: bytes | str) -> str:
             return komvos.text(separator="\n", strip=True)
 
     return domi.body.text(separator="\n", strip=True) if domi.body else ""
+
+
+def syndesmoi_apo_html(dedomena: bytes | str, vasi: str = "") -> list[tuple[str, str]]:
+    """Οι σύνδεσμοι της σελίδας ως ζεύγη «κείμενο, απόλυτο URL».
+
+    Χρησιμεύει στην ανίχνευση πηγών: όταν το επίσημο ΦΕΚ δεν κατεβαίνει,
+    το ερώτημα «ποια σελίδα έχει αυτόν τον νόμο και πού δείχνει» απαντιέται
+    πολύ πιο γρήγορα βλέποντας τους συνδέσμους μιας σελίδας παρά μαντεύοντας
+    διευθύνσεις.
+    """
+    from urllib.parse import urljoin
+
+    if isinstance(dedomena, bytes):
+        dedomena = dedomena.decode("utf-8", "replace")
+
+    evrethenta: list[tuple[str, str]] = []
+    idonta: set[str] = set()
+    for komvos in HTMLParser(dedomena).css("a[href]"):
+        href = (komvos.attributes.get("href") or "").strip()
+        if not href or href.startswith(("#", "javascript:", "mailto:")):
+            continue
+        pliris = urljoin(vasi, href) if vasi else href
+        if pliris in idonta:
+            continue
+        idonta.add(pliris)
+        evrethenta.append((" ".join(komvos.text().split()), pliris))
+    return evrethenta

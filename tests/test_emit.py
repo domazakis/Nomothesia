@@ -11,7 +11,7 @@ from nomothesia.normalize.emit import (
     grapse_meta_json,
 )
 from nomothesia.normalize.greek import kanonikopoiise
-from nomothesia.normalize.structure import analyse_domi
+from nomothesia.normalize.structure import Arthro, Paragrafos, analyse_domi
 from nomothesia.registry import fortose_mitroo
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -76,3 +76,24 @@ def test_meta_json_katagrafei_proelefsi(tmp_path, nomothetima, arthra):
     assert meta["id"] == "kok-5209-2025"
     assert meta["checksum_pigis"] == "abc123"
     assert meta["fek_pdf_id"] == "20250100100"
+
+
+def test_dyo_paragrafoi_me_ton_idio_arithmo_den_moirazontai_anagnoristiko(tmp_path):
+    """Το αναγνωριστικό είναι κλειδί: δύο ίδια σημαίνουν χαμένο απόσπασμα.
+
+    Το π.δ. 237/1986 παραθέτει και την παλιά και τη νέα γραφή μιας
+    παραγράφου, οπότε το άρθρο 5 έχει δύο παραγράφους «1».
+    """
+    n = fortose_mitroo().get("kok-5209-2025")
+    arthro = Arthro(
+        arithmos="5",
+        paragrafoi=[
+            Paragrafos(arithmos="1", keimeno="Η αρχική γραφή."),
+            Paragrafos(arithmos="1", keimeno="Η γραφή μετά την αντικατάσταση."),
+        ],
+    )
+
+    diadromi = grapse_articles_jsonl(n, [arthro], tmp_path, pigi_url="https://pigi")
+    ids = [json.loads(gr)["id"] for gr in diadromi.read_text().splitlines()]
+
+    assert ids == ["kok-5209-2025:art-5:par-1", "kok-5209-2025:art-5:par-1-2"]

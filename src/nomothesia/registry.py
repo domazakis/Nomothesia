@@ -52,6 +52,17 @@ class TyposPigis(StrEnum):
     KODIKOPOIIMENO_HTML = "kodikopoiimeno_html"
     EURLEX_HTML = "eurlex_html"
     PDF_ALLI_PIGI = "pdf_alli_pigi"
+    # Παλαιό δυαδικό Word. Ο δημόσιος τομέας δημοσιεύει ακόμη σε αυτή τη
+    # μορφή, και κάποτε είναι το μόνο αναγνώσιμο κείμενο ενός νομοθετήματος
+    # που στο ΦΕΚ υπάρχει μόνο σαρωμένο. Δες extract/doc.py.
+    DOC_ALLI_PIGI = "doc_alli_pigi"
+    # Δεν είναι εναλλακτική πηγή αλλά **προσθήκη** σε όποια πηγή πετύχει:
+    # άρθρα που λείπουν από το κείμενο της κύριας πηγής. Δες
+    # sources/keimena/README.md.
+    SYMPLIROMA = "sympliroma"
+    # Αντίγραφο ΦΕΚ μέσα στο repository, για όταν η επίσημη πηγή είναι
+    # απρόσιτη. Δες sources/fek/README.md.
+    TOPIKO_FEK = "topiko_fek"
 
 
 class Fek(BaseModel):
@@ -127,6 +138,13 @@ class Nomothetima(BaseModel):
     scheseis: Scheseis = Field(default_factory=Scheseis)
     piges: list[Pigi] = Field(default_factory=list)
     simeioseis: str | None = None
+    # Οι `simeioseis` είναι ημερολόγιο συντηρητή: ποιες πηγές δοκιμάστηκαν,
+    # τι έσπασε, τι μένει. Δεν έχουν θέση σε φωνητικό πράκτορα.
+    #
+    # Η `prosochi` είναι το αντίθετο: μία σύντομη πρόταση για τον αναγνώστη
+    # του κειμένου, που ταξιδεύει μαζί του στο knowledge base. Μπαίνει μόνο
+    # όταν το κείμενο έχει όριο το οποίο δεν φαίνεται διαβάζοντάς το.
+    prosochi: str | None = None
 
     @model_validator(mode="after")
     def _elegxos_tautotitas(self) -> Nomothetima:

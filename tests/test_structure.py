@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from nomothesia.normalize.greek import kanonikopoiise
-from nomothesia.normalize.structure import analyse_domi
+from nomothesia.normalize.structure import MEGISTES_GRAMMES_TITLOU, analyse_domi
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -90,3 +90,171 @@ def test_thoryvos_selidas_den_mpainei_sto_keimeno(arthra):
 
 def test_keimeno_xoris_arthra_epistrefei_kena():
     assert analyse_domi("Απλό κείμενο χωρίς καμία δομή άρθρων.") == []
+
+
+# ── Τίτλοι που σπάνε σε δεύτερη σειρά ────────────────────────────────────
+#
+# Στο ΦΕΚ ο τίτλος τυπώνεται κεντραρισμένος και σπάει όπου δεν χωράει. Παίρνοντας
+# μόνο την πρώτη σειρά, ο μισός τίτλος κατέληγε στο σώμα ως παράγραφος: στον ΚΟΚ
+# του 2025 συνέβαινε σε 22 από τα 132 άρθρα, και το άρθρο για το αλκοόλ φαινόταν
+# να λέει «φαρμάκων ή τοξικών ουσιών».
+
+
+def test_titlos_se_dyo_seires_enonetai():
+    keimeno = (
+        "Άρθρο 46\n"
+        "Οδήγηση υπό την επίδραση οινοπνεύματος,\n"
+        "φαρμάκων ή τοξικών ουσιών\n"
+        "1. Απαγορεύεται η οδήγηση κάθε οδικού οχήματος.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos == "Οδήγηση υπό την επίδραση οινοπνεύματος, φαρμάκων ή τοξικών ουσιών"
+    assert arthro.paragrafoi[0].arithmos == "1"
+
+
+def test_i_synecheia_tou_titlou_den_ginetai_paragrafos():
+    keimeno = "Άρθρο 14\nΕγκατάσταση μέσων σήμανσης\nκαι σηματοδότησης\n1. Η αρχή αποφασίζει.\n"
+    (arthro,) = analyse_domi(keimeno)
+    assert len(arthro.paragrafoi) == 1
+    assert "σηματοδότησης" not in arthro.paragrafoi[0].keimeno
+
+
+def test_to_enotiko_diloni_synecheia_akoma_kai_me_kefalaio():
+    keimeno = (
+        "Άρθρο 98\n"
+        "Άδειες οδήγησης - Κυρώσεις -\n"
+        "Άδειες εκπαιδευτών υποψήφιων οδηγών\n"
+        "1. Ισχύουν τα εξής.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos.endswith("Άδειες εκπαιδευτών υποψήφιων οδηγών")
+
+
+def test_protasi_somatos_den_prosartatai_ston_titlo():
+    """Το κεφαλαίο αρχικό προστατεύει το σώμα των άρθρων χωρίς αρίθμηση."""
+    keimeno = "Άρθρο 1\nΣκοπός\nΣκοπός του παρόντος είναι η ρύθμιση της κυκλοφορίας.\n"
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos == "Σκοπός"
+    assert arthro.paragrafoi[0].keimeno.startswith("Σκοπός του παρόντος")
+
+
+def test_titlos_enotitas_se_dyo_seires_enonetai():
+    keimeno = (
+        "ΜΕΡΟΣ Β΄\n"
+        "ΣΗΜΑΝΣΗ - ΣΗΜΑΤΟΔΟΤΗΣΗ -\n"
+        "ΟΔΙΚΗ ΣΥΜΠΕΡΙΦΟΡΑ\n"
+        "Άρθρο 6\n"
+        "Τροχονόμοι\n"
+        "1. Ρυθμίζουν την κυκλοφορία.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.meros.titlos == "ΣΗΜΑΝΣΗ - ΣΗΜΑΤΟΔΟΤΗΣΗ - ΟΔΙΚΗ ΣΥΜΠΕΡΙΦΟΡΑ"
+    assert arthro.titlos == "Τροχονόμοι"
+
+
+# ── Παλιά νομοτεχνική ────────────────────────────────────────────────────
+#
+# Οι νόμοι της δεκαετίας του '70 και του '80 γράφουν «Άρθρον» και συχνά βάζουν
+# τελεία μετά τον αριθμό. Χωρίς αυτό, ο ν. 489/1976 και το π.δ. 237/1986
+# κατέβαιναν κανονικά και πετάγονταν ως «κείμενο χωρίς άρθρα».
+
+
+def test_anagnorizei_to_arthron_ton_palaion_nomon():
+    keimeno = (
+        "Άρθρον 1\n"
+        "Υποχρέωσις ασφαλίσεως\n"
+        "1. Ο κύριος του οχήματος υποχρεούται εις ασφάλισιν.\n"
+        "Άρθρον 2.\n"
+        "Έκτασις ασφαλιστικής καλύψεως\n"
+        "1. Η ασφάλισις καλύπτει την έναντι τρίτων ευθύνην.\n"
+    )
+    arthra = analyse_domi(keimeno)
+    assert [a.arithmos for a in arthra] == ["1", "2"]
+    assert arthra[1].titlos == "Έκτασις ασφαλιστικής καλύψεως"
+
+
+def test_i_teleia_meta_ton_arithmo_den_mpainei_ston_arithmo():
+    (arthro,) = analyse_domi("Άρθρον 15.\nΤίτλος\n1. Κείμενο.\n")
+    assert arthro.arithmos == "15"
+
+
+def test_parapompi_me_peza_den_theoreitai_epikefalida():
+    """«άρθρο 57.» μέσα σε πρόταση δεν είναι αρχή άρθρου.
+
+    Στη διστήλη του ΦΕΚ μια τέτοια παραπομπή πέφτει συχνά στην αρχή γραμμής.
+    Στον ΚΟΚ έκοβε το άρθρο 57 στα δύο, με τη μισή διάταξη να γίνεται τίτλος.
+    """
+    keimeno = (
+        "Άρθρο 57\n"
+        "Διαστάσεις και βάρη\n"
+        "1. Τα οχήματα ακινητοποιούνται σύμφωνα με το\n"
+        "άρθρο 57.\n"
+        "2. Οι παραβάσεις κατατάσσονται στην κατηγορία γ΄.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos == "Διαστάσεις και βάρη"
+    assert len(arthro.paragrafoi) == 2
+
+
+def test_paragrafos_choris_keno_meta_tin_teleia():
+    """Ο Τελωνειακός Κώδικας γράφει «1.Οι επιβάτες», χωρίς κενό.
+
+    Απαιτώντας το κενό, ο αγωγός δεν έβρισκε καμία παράγραφο: ολόκληρο το
+    άρθρο έμενε ενιαίο και η πρώτη του πρόταση περνούσε για τίτλο.
+    """
+    arthra = analyse_domi(
+        "Άρθρο 12\n1.Οι επιβάτες προσκομίζουν τις αποσκευές τους.\n"
+        "2.Η Τελωνειακή Αρχή τις εξετάζει."
+    )
+
+    assert [p.arithmos for p in arthra[0].paragrafoi] == ["1", "2"]
+
+
+def test_poso_stin_arxi_grammis_den_einai_paragrafos():
+    arthra = analyse_domi("Άρθρο 3\nΠρόστιμο\n1.500 ευρώ επιβάλλονται.")
+
+    assert arthra[0].titlos == "Πρόστιμο"
+    assert [p.arithmos for p in arthra[0].paragrafoi] == [""]
+
+
+def test_titlos_pou_den_teleionei_pote_den_einai_titlos():
+    """Το άρθρο 1 του π.δ. 237/1986 αρχίζει κατευθείαν με ορισμούς.
+
+    Χωρίς τίτλο να τελειώσει κάπου, η συνέχεια τρώει την πρώτη πρόταση του
+    σώματος και την εμφανίζει ως τίτλο τριακοσίων χαρακτήρων.
+    """
+    soma = "\n".join(
+        f"συνέχεια της πρότασης, μέρος {i}," for i in range(MEGISTES_GRAMMES_TITLOU + 3)
+    )
+    arthra = analyse_domi(f"Άρθρο 1\nΚατά την έννοια του παρόντος: α) όχημα,\n{soma}")
+
+    assert arthra[0].titlos == ""
+    assert "Κατά την έννοια του παρόντος" in arthra[0].keimeno
+
+
+def test_epikefalida_se_eisagogika_den_einai_arthro_tou_nomou():
+    """Ο τροποποιητικός νόμος παραθέτει τις επικεφαλίδες όσων τροποποιεί.
+
+    «Το άρθρο 8 αντικαθίσταται ως εξής: "Άρθρο 8 …"» — αν η παράθεση περνούσε
+    για επικεφαλίδα, ο ν. 5113/2024 θα αποκτούσε τα άρθρα του π.δ. 237/1986.
+    """
+    arthra = analyse_domi(
+        'Άρθρο 4\nΤροποποίηση\n1. Το άρθρο 8 αντικαθίσταται:\n"Άρθρο 8\nΜεταβίβαση."'
+    )
+
+    assert [a.arithmos for a in arthra] == ["4"]
+
+
+def test_arthro_mias_protasis_kratai_to_keimeno_tou():
+    """Ένα άρθρο με τίτλο και χωρίς κείμενο δεν υπάρχει.
+
+    Το άρθρο 16 του π.δ. 237/1986 είναι μία πρόταση. Περνώντας ολόκληρο για
+    τίτλο, το άρθρο έμενε χωρίς παραγράφους — και επειδή το articles.jsonl
+    γράφει μία γραμμή ανά παράγραφο, εξαφανιζόταν από την ανάκτηση.
+    """
+    arthra = analyse_domi(
+        "Άρθρο 16\nΣυνιστάται νομικό πρόσωπο με την επωνυμία «Επικουρικό Κεφάλαιο»."
+    )
+
+    assert arthra[0].titlos == ""
+    assert "Επικουρικό Κεφάλαιο" in arthra[0].keimeno

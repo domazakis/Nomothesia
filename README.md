@@ -59,8 +59,10 @@ nomothesia fetch --thematiki adeies-odigisis
 
 > **Το `fetch` χρειάζεται πρόσβαση σε `et.gr`, `kodiko.gr` και
 > `eur-lex.europa.eu`.** Αν τρέχεις μέσα σε cloud συνεδρία με περιορισμένη
-> πολιτική δικτύου, θα αποτύχει με σαφές μήνυμα. Δες το
-> [`docs/ENIMEROSI.md`](docs/ENIMEROSI.md).
+> πολιτική δικτύου, θα αποτύχει με σαφές μήνυμα. Τότε τρέξε το ίδιο πράγμα από
+> τους runners της GitHub: **Actions → Έλεγχος αλλαγών νομοθεσίας → Run
+> workflow**, που κατεβάζει τα κείμενα και ανοίγει pull request. Οι λεπτομέρειες
+> και οι υπόλοιπες λύσεις στο [`docs/ENIMEROSI.md`](docs/ENIMEROSI.md).
 
 ## Το βιβλίο σχολών οδηγών
 

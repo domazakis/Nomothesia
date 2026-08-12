@@ -2,10 +2,61 @@ name: Έλεγχος αλλαγών νομοθεσίας
 
 # Τρέχει κάθε Δευτέρα πρωί και ανοίγει pull request μόνο αν κάτι όντως άλλαξε.
 # Σκοπός: να μη χρειάζεται να θυμάται κανείς να ελέγχει τη νομοθεσία.
+#
+# Χρησιμεύει και ως χειροκίνητος τρόπος να γεμίσει το corpus: οι runners της
+# GitHub έχουν ελεύθερη πρόσβαση στο et.gr, σε αντίθεση με τις cloud συνεδρίες
+# που τρέχουν πίσω από περιοριστική πολιτική δικτύου. Actions → «Έλεγχος
+# αλλαγών νομοθεσίας» → Run workflow.
 on:
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
+    inputs:
+      nomothetima:
+        description: >-
+          Αναγνωριστικό ενός μόνο νομοθετήματος, για δοκιμή μιας πηγής χωρίς να
+          περιμένεις και τα είκοσι. Κενό σημαίνει όλα.
+        required: false
+        default: ""
+      syndesmoi:
+        description: >-
+          Διεύθυνση σελίδας προς εξέταση, αντί για λήψη. Δείχνει πού οδηγούν οι
+          σύνδεσμοί της — για να βρεθεί πηγή νομοθετήματος που δεν κατεβαίνει.
+        required: false
+        default: ""
+      filtro:
+        description: >-
+          Όροι χωρισμένοι με κόμμα, για να κρατηθούν μόνο οι σχετικοί σύνδεσμοι
+          (π.χ. «pdf,et.gr»). Ισχύει μόνο μαζί με το προηγούμενο πεδίο.
+        required: false
+        default: ""
+      selides:
+        description: >-
+          Πόσες σελίδες καταλόγου να διατρέξει η ανίχνευση, μέσω «?page=N».
+        required: false
+        default: "1"
+      keimeno:
+        description: >-
+          Διεύθυνση πηγής της οποίας θέλουμε να δούμε τι βλέπει ο αγωγός:
+          πόσο κείμενο βγαίνει και πόσα άρθρα αναγνωρίζονται.
+        required: false
+        default: ""
+      agnosta:
+        description: >-
+          Να δείξει μόνο όσα δεν υπάρχουν ήδη στο μητρώο — ο έλεγχος «τι μας
+          λείπει» χωρίς να διαβάσει κανείς διακόσιες εγγραφές.
+        type: boolean
+        required: false
+        default: false
+      apothikefsi:
+        description: >-
+          Να κρατηθεί το αποτέλεσμα μιας στοχευμένης λήψης. Κανονικά η λήψη
+          ενός μόνο νομοθετήματος είναι διαγνωστική και δεν αγγίζει το corpus·
+          όταν όμως μια πηγή απαντά μόνο στον runner, αυτός είναι ο τρόπος να
+          μπει το κείμενο στο repository.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -28,16 +79,54 @@ jobs:
       - name: Έλεγχος μητρώου
         run: uv run nomothesia validate
 
+      # Ο runner ξεκινά κάθε φορά από το μηδέν, οπότε χωρίς αυτό το βήμα ο
+      # conditional GET δεν έχει τι να συγκρίνει και ξανακατεβαίνουν και τα 20
+      # ΦΕΚ κάθε Δευτέρα. Η μνήμη είναι αναπαράξιμη· αν χαθεί, απλώς αργεί.
+      - name: Επαναφορά τοπικής μνήμης λήψεων
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: nomothesia-cache-${{ github.run_id }}
+          restore-keys: nomothesia-cache-
+
       - name: Λήψη νομοθεσίας
         id: fetch
-        # Μια αποτυχημένη πηγή δεν πρέπει να ακυρώνει τις υπόλοιπες· το βήμα
-        # καταγράφει την έξοδο και συνεχίζει.
+        # Μια αποτυχημένη πηγή δεν πρέπει να ακυρώνει τις υπόλοιπες, γι' αυτό το
+        # βήμα συνεχίζει. Το `pipefail` όμως είναι απαραίτητο: χωρίς αυτό ο
+        # κωδικός εξόδου του `fetch` χάνεται μέσα στο `tee` και η αποτυχία
+        # γίνεται αόρατη. Το τελευταίο βήμα του job τη μετατρέπει σε κόκκινο
+        # run — αφού πρώτα ανοίξει το pull request για όσα πέτυχαν.
         continue-on-error: true
+        # Το αναγνωριστικό περνά ως μεταβλητή περιβάλλοντος και όχι μέσα στο
+        # script: ό,τι γράψει κανείς στο πεδίο δεν εκτελείται ως εντολή.
+        env:
+          NOMOTHETIMA: ${{ inputs.nomothetima }}
+          SYNDESMOI: ${{ inputs.syndesmoi }}
+          FILTRO: ${{ inputs.filtro }}
+          SELIDES: ${{ inputs.selides }}
+          AGNOSTA: ${{ inputs.agnosta }}
+          KEIMENO: ${{ inputs.keimeno }}
         run: |
-          uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
+          set -o pipefail
+          if [ -n "$KEIMENO" ]; then
+            uv run nomothesia keimeno "$KEIMENO" 2>&1 | tee /tmp/fetch.log
+          elif [ -n "$SYNDESMOI" ]; then
+            uv run nomothesia syndesmoi "$SYNDESMOI" ${FILTRO:+--filtro "$FILTRO"} \
+              ${SELIDES:+--selides "$SELIDES"} \
+              $([ "$AGNOSTA" = "true" ] && echo --agnosta) 2>&1 | tee /tmp/fetch.log
+          elif [ -n "$NOMOTHETIMA" ]; then
+            uv run nomothesia fetch --id "$NOMOTHETIMA" -v 2>&1 | tee /tmp/fetch.log
+          else
+            uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
+          fi
 
       - name: Εντοπισμός αλλαγών
         id: diff
+        env:
+          NOMOTHETIMA: ${{ inputs.nomothetima }}
+          SYNDESMOI: ${{ inputs.syndesmoi }}
+          KEIMENO: ${{ inputs.keimeno }}
+          APOTHIKEFSI: ${{ inputs.apothikefsi }}
         run: |
           if [ -n "$(git status --porcelain corpus/)" ]; then
             echo "allages=nai" >> "$GITHUB_OUTPUT"
@@ -45,13 +134,74 @@ jobs:
             echo "allages=ochi" >> "$GITHUB_OUTPUT"
           fi
 
+          # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
+          # το corpus με το ένα νομοθέτημα που ζητήθηκε. Εξαίρεση μόνο όταν
+          # ζητηθεί ρητά — για πηγές που απαντούν αποκλειστικά στον runner.
+          if [ -z "$NOMOTHETIMA$SYNDESMOI$KEIMENO" ] || [ "$APOTHIKEFSI" = "true" ]; then
+            echo "kratame=nai" >> "$GITHUB_OUTPUT"
+          else
+            echo "kratame=ochi" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Σύνταξη σώματος pull request
+        if: steps.diff.outputs.allages == 'nai' && steps.diff.outputs.kratame == 'nai'
+        run: |
+          {
+            echo "Αυτόματη ενημέρωση του corpus από τις επίσημες πηγές."
+            echo
+            if [ "${{ steps.fetch.outcome }}" = "failure" ]; then
+              echo "> [!WARNING]"
+              echo "> Μία ή περισσότερες πηγές απέτυχαν. Το pull request"
+              echo "> περιέχει μόνο όσα νομοθετήματα κατέβηκαν σωστά."
+              echo
+            fi
+            echo '```'
+            cat /tmp/fetch.log
+            echo '```'
+          } > /tmp/pr-body.md
+
       - name: Άνοιγμα pull request
-        if: steps.diff.outputs.allages == 'nai'
+        if: steps.diff.outputs.allages == 'nai' && steps.diff.outputs.kratame == 'nai'
         uses: peter-evans/create-pull-request@v7
         with:
           branch: enimerosi-nomothesias
           title: "Ενημέρωση νομοθεσίας"
           commit-message: "Ενημέρωση corpus από τις επίσημες πηγές"
-          body-path: /tmp/fetch.log
+          body-path: /tmp/pr-body.md
           add-paths: corpus/
           delete-branch: true
+
+      # Χωρίς περίληψη, ένα run που δεν άνοιξε PR δεν λέει τίποτα: δεν ξεχωρίζει
+      # το «δεν άλλαξε ο νόμος» από το «δεν κατέβηκε τίποτα».
+      - name: Περίληψη εκτέλεσης
+        if: always()
+        run: |
+          {
+            echo "## Λήψη νομοθεσίας"
+            echo
+            case "${{ steps.fetch.outcome }}" in
+              success) echo "- Πηγές: όλες απάντησαν." ;;
+              failure) echo "- Πηγές: **τουλάχιστον μία απέτυχε.**" ;;
+              *)       echo "- Πηγές: η λήψη δεν έτρεξε καν." ;;
+            esac
+            case "${{ steps.diff.outputs.allages }}${{ steps.diff.outputs.kratame }}" in
+              naina*) echo "- Corpus: άλλαξε — άνοιξε pull request." ;;
+              naioc*) echo "- Corpus: άλλαξε, αλλά η εκτέλεση ήταν διαγνωστική και δεν κρατήθηκε τίποτα." ;;
+              ochi*)  echo "- Corpus: καμία αλλαγή, δεν ανοίγει pull request." ;;
+              *)      echo "- Corpus: δεν ελέγχθηκε." ;;
+            esac
+            echo
+            echo '```'
+            cat /tmp/fetch.log 2>/dev/null || echo "(δεν παρήχθη log)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Τελευταίο επίτηδες: το PR έχει ήδη ανοίξει για όσα πέτυχαν, και τώρα το
+      # run γίνεται κόκκινο ώστε η αποτυχία να φτάσει ως ειδοποίηση. Ένα πράσινο
+      # run χωρίς PR σημαίνει «δεν άλλαξε ο νόμος» — δεν πρέπει να σημαίνει
+      # ποτέ «δεν κατάφερα να δω τον νόμο».
+      - name: Αποτυχία αν κάποια πηγή δεν κατέβηκε
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          echo "::error::Η λήψη απέτυχε για μία ή περισσότερες πηγές. Δες την περίληψη του run."
+          exit 1

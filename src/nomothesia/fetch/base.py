@@ -14,19 +14,46 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
+import ssl
 import time
 from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
 
+from nomothesia.fetch.alysida import (
+    SfalmaAlysidas,
+    context_me_endiamesa,
+    einai_sfalma_alysidas,
+    endiamesa_pistopoiitika,
+)
 from nomothesia.registry import repo_riza
+
+logger = logging.getLogger(__name__)
 
 # Οι κεφαλίδες HTTP είναι ASCII — δεν μπαίνουν ελληνικά εδώ.
 USER_AGENT = (
     "Nomothesia/0.1 (public road-traffic legislation collector; "
     "+https://github.com/domazakis/Nomothesia)"
 )
+
+# Ένα αίτημα μόνο με User-Agent είναι ελλιπές, και κάποιοι διακομιστές το
+# κλείνουν χωρίς καν να απαντήσουν — το lawspot.gr το κάνει. Δηλώνουμε τι
+# δεχόμαστε και σε ποια γλώσσα, όπως κάθε σωστός πελάτης HTTP.
+#
+# Δεν μεταμφιεζόμαστε σε browser: το User-Agent παραμένει ταυτοποιήσιμο και
+# δείχνει στο repository. Αν ένας διακομιστής μας απορρίπτει επειδή δηλώνουμε
+# ποιοι είμαστε, αυτό είναι απάντηση που τη σεβόμαστε, όχι εμπόδιο να
+# παρακαμφθεί.
+KEFALIDES = {
+    "User-Agent": USER_AGENT,
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "application/pdf;q=0.9,*/*;q=0.8"
+    ),
+    "Accept-Language": "el-GR,el;q=0.9,en;q=0.8",
+}
 
 PAUSI_METAXY_AITIMATON = 2.0
 MEGISTES_PROSPATHEIES = 4
@@ -87,11 +114,18 @@ class Lipsi:
         self.fakelos_cache = fakelos_cache or (repo_riza() / ".cache")
         self.fakelos_cache.mkdir(parents=True, exist_ok=True)
         self.pausi = pausi
+        self.timeout = timeout
         self._teleftaio_aitima = 0.0
-        self._client = httpx.Client(
-            headers={"User-Agent": USER_AGENT},
-            timeout=timeout,
+        self._epipleon_pem = ""
+        self._dokimasmenoi_hosts: set[str] = set()
+        self._client = self._neos_client()
+
+    def _neos_client(self) -> httpx.Client:
+        return httpx.Client(
+            headers=KEFALIDES,
+            timeout=self.timeout,
             follow_redirects=True,
+            verify=context_me_endiamesa(self._epipleon_pem),
         )
 
     def __enter__(self) -> Lipsi:
@@ -113,6 +147,54 @@ class Lipsi:
     def _diadromi_meta(self, url: str) -> Path:
         return self.fakelos_cache / f"{self._kleidi(url)}.json"
 
+    def _symplirose_alysida(self, url: str, exc: Exception) -> bool:
+        """Δοκιμάζει να καλύψει ελλιπή αλυσίδα πιστοποιητικών του διακομιστή.
+
+        Επιστρέφει `True` όταν κάτι όντως προστέθηκε, δηλαδή όταν αξίζει άμεση
+        επανάληψη. Μία προσπάθεια ανά host: αν δεν έλυσε το πρόβλημα την πρώτη
+        φορά, δεν θα το λύσει ούτε την τέταρτη.
+        """
+        if not einai_sfalma_alysidas(exc):
+            return False
+
+        # Ο host που έσπασε δεν είναι κατ' ανάγκη αυτός που ζητήσαμε: το
+        # www.et.gr ανακατευθύνει, και η ελλιπής αλυσίδα εμφανίζεται στον
+        # επόμενο σταθμό. Το αίτημα της εξαίρεσης ξέρει πού πράγματι πήγαμε.
+        aitima = getattr(exc, "request", None)
+        diefthynsi = aitima.url if aitima is not None else httpx.URL(url)
+        host = diefthynsi.host
+        if not host or host in self._dokimasmenoi_hosts:
+            return False
+        self._dokimasmenoi_hosts.add(host)
+
+        try:
+            pem = endiamesa_pistopoiitika(host, port=diefthynsi.port or 443)
+        except (SfalmaAlysidas, OSError, ssl.SSLError) as sfalma:
+            logger.warning("δεν συμπληρώθηκε η αλυσίδα του %s: %s", host, sfalma)
+            return False
+        if not pem:
+            return False
+
+        logger.info("συμπληρώθηκε η αλυσίδα πιστοποιητικών του %s", host)
+        self._epipleon_pem += pem
+        self._client.close()
+        self._client = self._neos_client()
+        return True
+
+    def _aitima(self, url: str, kefalides: dict[str, str]) -> httpx.Response:
+        """Το αίτημα, με μία ευκαιρία συμπλήρωσης αλυσίδας ανά host.
+
+        Ο βρόχος τερματίζει από μόνος του: κάθε host δοκιμάζεται μία φορά, οπότε
+        μια ανακατεύθυνση με δύο σπασμένες αλυσίδες διορθώνεται σε δύο γύρους
+        και η τρίτη αποτυχία βγαίνει προς τα έξω.
+        """
+        while True:
+            try:
+                return self._client.get(url, headers=kefalides)
+            except httpx.ConnectError as exc:
+                if not self._symplirose_alysida(url, exc):
+                    raise
+
     def _perimene(self) -> None:
         perasan = time.monotonic() - self._teleftaio_aitima
         if perasan < self.pausi:
@@ -120,7 +202,24 @@ class Lipsi:
         self._teleftaio_aitima = time.monotonic()
 
     # ── δημόσιο API ──────────────────────────────────────────────────────
+    def _apo_disko(self, url: str) -> ApotelesmaLipsis:
+        """Διαβάζει πηγή που βρίσκεται μέσα στο repository (`file:…`)."""
+        diadromi = repo_riza() / url.removeprefix("file:").lstrip("/")
+        if not diadromi.is_file():
+            raise SfalmaLipsis(f"το αρχείο {diadromi} δεν υπάρχει")
+        perieksomeno = diadromi.read_bytes()
+        typos = "application/pdf" if diadromi.suffix == ".pdf" else "text/html"
+        return ApotelesmaLipsis(
+            perieksomeno=perieksomeno,
+            url=url,
+            apo_cache=True,
+            typos_perieksomenou=typos,
+        )
+
     def kateveste(self, url: str, *, agnoise_cache: bool = False) -> ApotelesmaLipsis:
+        if url.startswith("file:"):
+            return self._apo_disko(url)
+
         diadromi_dedomenon = self._diadromi_dedomenon(url)
         diadromi_meta = self._diadromi_meta(url)
 
@@ -139,7 +238,7 @@ class Lipsi:
         for prospatheia in range(MEGISTES_PROSPATHEIES):
             try:
                 self._perimene()
-                apantisi = self._client.get(url, headers=kefalides)
+                apantisi = self._aitima(url, kefalides)
             except httpx.ProxyError as exc:
                 # Άρνηση πολιτικής δικτύου. Η επανάληψη δεν πρόκειται να
                 # βοηθήσει — σταματάμε αμέσως με εξήγηση.
@@ -171,7 +270,22 @@ class Lipsi:
                     f"environment — δες το docs/ENIMEROSI.md."
                 )
 
-            apantisi.raise_for_status()
+            # Κάθε σφάλμα γίνεται SfalmaLipsis, που ο αγωγός ξέρει να πιάσει.
+            # Το `raise_for_status()` του httpx πετούσε δική του εξαίρεση, η
+            # οποία δραπέτευε από τον αγωγό: ένα 404 σε μία πηγή ακύρωνε
+            # ολόκληρη την εκτέλεση και τα υπόλοιπα δεκαεννιά νομοθετήματα.
+            if apantisi.status_code >= 400:
+                raise SfalmaLipsis(f"HTTP {apantisi.status_code} για {url}")
+
+            # Το EUR-Lex απαντά κατά διαστήματα «200 OK» με άδειο σώμα. Δεν
+            # είναι απάντηση, είναι σκόνταμα του διακομιστή: το ίδιο URL δίνει
+            # ολόκληρη την οδηγία λίγα λεπτά αργότερα. Χωρίς επανάληψη, ένα
+            # νομοθέτημα έβγαινε και ξανάμπαινε στο corpus από εκτέλεση σε
+            # εκτέλεση, σαν να άλλαζε ο νόμος.
+            if not apantisi.content:
+                teleftaio_sfalma = SfalmaLipsis(f"άδειο σώμα απάντησης από {url}")
+                time.sleep(min(2**prospatheia * 5, XRONOS_ANAMONIS))
+                continue
 
             diadromi_dedomenon.write_bytes(apantisi.content)
             diadromi_meta.write_text(
@@ -194,6 +308,15 @@ class Lipsi:
                 typos_perieksomenou=apantisi.headers.get("Content-Type", ""),
             )
 
+        # Η αιτία μπαίνει στο μήνυμα, όχι μόνο στο `raise ... from`: η εντολή
+        # τρέχει και μέσα σε GitHub Action, όπου το μόνο που μένει είναι το log.
+        # Χωρίς αυτήν, ένα timeout και ένα σπασμένο URL μοιάζουν ίδια.
+        aitia = (
+            f"{type(teleftaio_sfalma).__name__}: {teleftaio_sfalma}"
+            if teleftaio_sfalma
+            else "άγνωστη αιτία"
+        )
         raise SfalmaLipsis(
-            f"απέτυχε η λήψη του {url} μετά από {MEGISTES_PROSPATHEIES} προσπάθειες"
+            f"απέτυχε η λήψη του {url} μετά από {MEGISTES_PROSPATHEIES} "
+            f"προσπάθειες ({aitia})"
         ) from teleftaio_sfalma

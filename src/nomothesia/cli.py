@@ -4,6 +4,9 @@
     nomothesia status     τι υπάρχει και τι λείπει από το corpus
     nomothesia fetch      λήψη και ενημέρωση των κειμένων
     nomothesia changes    τι άλλαξε από την τελευταία λήψη
+    nomothesia export     knowledge base για φωνητικό agent
+    nomothesia syndesmoi  πού οδηγούν οι σύνδεσμοι μιας σελίδας — ανίχνευση πηγών
+    nomothesia keimeno    τι βλέπει ο αγωγός σε μια πηγή — διάγνωση εξαγωγής
 """
 
 from __future__ import annotations
@@ -15,9 +18,21 @@ from rich.console import Console
 from rich.table import Table
 
 from nomothesia import changes as ch
-from nomothesia.fetch.base import Lipsi
+from nomothesia.export import exagoge_nomothetimatos, gia_knowledge_base
+from nomothesia.extract.doc import einai_doc, keimeno_apo_doc
+from nomothesia.extract.html import keimeno_apo_html, syndesmoi_apo_html
+from nomothesia.extract.pdf import exei_epipedo_keimenou, keimeno_apo_pdf
+from nomothesia.fetch.base import Lipsi, SfalmaLipsis
+from nomothesia.normalize.greek import kanonikopoiise
+from nomothesia.normalize.structure import analyse_domi
 from nomothesia.pipeline import SfalmaAgogou, epexergasou
-from nomothesia.registry import Katastasi, Mitroo, Nomothetima, fortose_mitroo
+from nomothesia.registry import (
+    Katastasi,
+    Mitroo,
+    Nomothetima,
+    fortose_mitroo,
+    repo_riza,
+)
 
 app = typer.Typer(
     help="Συλλογή και ενημέρωση της ελληνικής νομοθεσίας για την οδήγηση.",
@@ -185,6 +200,216 @@ def fetch(
 
     if apotyxies:
         raise typer.Exit(code=1)
+
+
+@app.command()
+def export() -> None:
+    """Παράγει το knowledge base για φωνητικό agent, στον φάκελο `export/`.
+
+    Ένα αρχείο ανά νομοθέτημα, κάθε άρθρο με την ταυτότητά του από πάνω και τις
+    συντομογραφίες ανοιγμένες για εκφώνηση. Μόνο ισχύον δίκαιο.
+    """
+    mitroo = _mitroo()
+    epilegmena = gia_knowledge_base(mitroo)
+    katargimena = len(mitroo.nomothetimata) - len(epilegmena)
+
+    pinakas = Table(title="Knowledge base")
+    pinakas.add_column("Νομοθέτημα")
+    pinakas.add_column("Άρθρα", justify="right")
+    pinakas.add_column("Μέγεθος", justify="right")
+    pinakas.add_column("Αρχείο", style="dim")
+
+    apotelesmata = [
+        apotelesma
+        for n in epilegmena
+        if (apotelesma := exagoge_nomothetimatos(n)) is not None
+    ]
+    for a in apotelesmata:
+        pinakas.add_row(
+            a.nomothetima_id,
+            str(a.plithos_arthron),
+            f"{a.charaktires / 1000:.0f}k",
+            str(a.diadromi.relative_to(repo_riza())),
+        )
+
+    console.print(pinakas)
+    console.print(
+        f"\n{len(apotelesmata)} αρχεία στο [bold]export/[/] — "
+        f"{sum(a.plithos_arthron for a in apotelesmata)} άρθρα."
+    )
+    if katargimena:
+        console.print(
+            f"[dim]{katargimena} νομοθετήματα εξαιρέθηκαν ως μη ισχύοντα: ένας "
+            f"agent που απαντά με καταργημένη διάταξη δίνει λάθος απάντηση.[/]"
+        )
+    leipoun = len(epilegmena) - len(apotelesmata)
+    if leipoun:
+        console.print(
+            f"[yellow]⚠[/]  {leipoun} νομοθετήματα λείπουν από το corpus — "
+            f"τρέξε `nomothesia fetch`."
+        )
+
+
+def _agnosta_nomothetimata(
+    evrethenta: list[tuple[str, str]],
+) -> list[tuple[str, str]]:
+    """Κρατά όσα δεν καλύπτονται ήδη από το μητρώο.
+
+    Ο κατάλογος μιας κατηγορίας έχει διακόσιες εγγραφές και το ερώτημα είναι
+    «τι μας λείπει». Η σύγκριση γίνεται στον αριθμό και το έτος, όπως
+    εμφανίζονται στο κείμενο του συνδέσμου («Νόμος 5209/2025»), ώστε να μην
+    εξαρτάται από τη μορφή της διεύθυνσης.
+
+    Τα καταργημένα παραλείπονται: δεν πρόκειται να μπουν στο knowledge base.
+    """
+    import re
+
+    mitroo = _mitroo()
+    gnosta = {
+        (str(n.arithmos).strip(), str(n.etos)) for n in mitroo.nomothetimata
+    }
+    tautotita = re.compile(r"(\d{1,6})\s*/\s*((?:19|20)\d{2})")
+
+    apotelesma = []
+    for keimeno, syndesmos in evrethenta:
+        if "Καταργη" in keimeno or "καταργη" in keimeno:
+            continue
+        taires = tautotita.findall(keimeno)
+        if any((ar, et) in gnosta for ar, et in taires):
+            continue
+        apotelesma.append((keimeno, syndesmos))
+    return apotelesma
+
+
+def _morfi(dedomena: bytes) -> str:
+    """Τι είναι πραγματικά το αρχείο, ανεξάρτητα από την κατάληξή του.
+
+    Μια διεύθυνση που τελειώνει σε `.doc` μπορεί να κρύβει Word, RTF ή σκέτο
+    HTML. Η διαφορά καθορίζει αν διαβάζεται καθόλου, οπότε δεν μαντεύεται από
+    το όνομα.
+    """
+    ypografes = (
+        (b"%PDF-", "PDF"),
+        (b"\xd0\xcf\x11\xe0", "Word (παλαιό δυαδικό .doc)"),
+        (b"PK\x03\x04", "ZIP ή .docx — δεν διαβάζεται ακόμη"),
+        (b"{\\rtf", "RTF"),
+    )
+    for ypografi, onoma in ypografes:
+        if dedomena.startswith(ypografi):
+            return onoma
+    arxi = dedomena[:400].lstrip().lower()
+    if arxi.startswith((b"<!doctype", b"<html", b"<?xml")):
+        return "HTML ή XML"
+    return "άγνωστη"
+
+
+@app.command()
+def keimeno(
+    url: str = typer.Argument(..., help="Η σελίδα ή το αρχείο προς εξέταση."),
+    grammes: int = typer.Option(40, help="Πόσες γραμμές κειμένου να δείξει."),
+) -> None:
+    """Δείχνει τι βλέπει ο αγωγός σε μια πηγή — και τι δομή αναγνωρίζει.
+
+    Το «δεν εντοπίστηκε κανένα άρθρο» λέει ότι κάτι πήγε στραβά, όχι τι. Η
+    εντολή δείχνει τις πρώτες γραμμές του κανονικοποιημένου κειμένου και πόσα
+    άρθρα βρήκε ο parser, ώστε η διαφορά ανάμεσα στο «δεν κατέβηκε» και στο
+    «κατέβηκε αλλά γράφεται αλλιώς» να φαίνεται με μια ματιά.
+    """
+    with Lipsi() as lipsi:
+        try:
+            apotelesma = lipsi.kateveste(url)
+        except SfalmaLipsis as exc:
+            console.print(f"[bold red]✗[/] {exc}")
+            raise typer.Exit(code=1) from exc
+
+    console.print(f"[dim]μορφή:[/] {_morfi(apotelesma.perieksomeno)}\n")
+
+    if apotelesma.einai_pdf:
+        if not exei_epipedo_keimenou(apotelesma.perieksomeno):
+            console.print("[bold red]✗[/] σαρωμένο PDF, χωρίς επίπεδο κειμένου")
+            raise typer.Exit(code=1)
+        akatergasto = keimeno_apo_pdf(apotelesma.perieksomeno)
+    elif einai_doc(apotelesma.perieksomeno):
+        akatergasto = keimeno_apo_doc(apotelesma.perieksomeno)
+    else:
+        akatergasto = keimeno_apo_html(apotelesma.perieksomeno)
+
+    kanoniko = kanonikopoiise(akatergasto)
+    arthra = analyse_domi(kanoniko)
+
+    console.print(
+        f"[bold]{len(apotelesma.perieksomeno)}[/] bytes → "
+        f"[bold]{len(kanoniko)}[/] χαρακτήρες → "
+        f"[bold]{len(arthra)}[/] άρθρα\n"
+    )
+    for grammi in kanoniko.split("\n")[:grammes]:
+        console.print(f"  {grammi[:100]}")
+
+
+@app.command()
+def syndesmoi(
+    url: str = typer.Argument(..., help="Η σελίδα που θα εξεταστεί."),
+    filtro: str | None = typer.Option(
+        None,
+        help="Κράτα όσους συνδέσμους περιέχουν κάποιον από αυτούς τους όρους "
+        "(χωρισμένους με κόμμα).",
+    ),
+    plithos: int = typer.Option(200, help="Μέγιστο πλήθος αποτελεσμάτων."),
+    selides: int = typer.Option(
+        1, help="Πόσες σελίδες καταλόγου να διατρέξει, μέσω `?page=N`."
+    ),
+    agnosta: bool = typer.Option(
+        False,
+        help="Μόνο ό,τι δεν υπάρχει ήδη στο μητρώο και δεν είναι καταργημένο.",
+    ),
+) -> None:
+    """Δείχνει τους συνδέσμους μιας σελίδας — για ανίχνευση νέων πηγών.
+
+    Όταν η επίσημη πηγή δεν κατεβαίνει, το ερώτημα γίνεται «ποια σελίδα έχει
+    αυτόν τον νόμο και πού δείχνει». Η εντολή απαντά χωρίς μαντεψιές, και
+    τρέχει και μέσα από το GitHub Action για περιβάλλοντα που δεν έχουν τα
+    ίδια δικαιώματα δικτύου.
+
+    Με `--selides` διατρέχει και τη σελιδοποίηση ενός καταλόγου, ώστε ο έλεγχος
+    «τι υπάρχει εκεί που δεν έχουμε» να μη χρειάζεται μία εκτέλεση ανά σελίδα.
+    """
+    evrethenta: list[tuple[str, str]] = []
+    idonta: set[str] = set()
+
+    with Lipsi() as lipsi:
+        for selida in range(1, max(selides, 1) + 1):
+            diefthynsi = url if selida == 1 else f"{url.rstrip('/')}/?page={selida}"
+            try:
+                apotelesma = lipsi.kateveste(diefthynsi)
+            except SfalmaLipsis as exc:
+                console.print(f"[bold red]✗[/] {exc}")
+                if selida == 1:
+                    raise typer.Exit(code=1) from exc
+                break
+            for keimeno, syndesmos in syndesmoi_apo_html(
+                apotelesma.perieksomeno, vasi=diefthynsi
+            ):
+                if syndesmos not in idonta:
+                    idonta.add(syndesmos)
+                    evrethenta.append((keimeno, syndesmos))
+
+    if filtro:
+        oroi = [o.strip().lower() for o in filtro.split(",") if o.strip()]
+        evrethenta = [
+            (k, u)
+            for k, u in evrethenta
+            if any(o in u.lower() or o in k.lower() for o in oroi)
+        ]
+
+    if agnosta:
+        evrethenta = _agnosta_nomothetimata(evrethenta)
+
+    console.print(f"[bold]{len(evrethenta)}[/] σύνδεσμοι από {url}\n")
+    for keimeno, syndesmos in evrethenta[:plithos]:
+        # Μία γραμμή ανά σύνδεσμο: ο κατάλογος διαβάζεται σε ένα log, όχι σε έξι.
+        console.print(f"{syndesmos.rsplit('/', 1)[-1]:<44} {keimeno[:64]}")
+    if len(evrethenta) > plithos:
+        console.print(f"\n[dim]…και {len(evrethenta) - plithos} ακόμη.[/]")
 
 
 @app.command()
