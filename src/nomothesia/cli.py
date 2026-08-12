@@ -280,6 +280,28 @@ def _agnosta_nomothetimata(
     return apotelesma
 
 
+def _morfi(dedomena: bytes) -> str:
+    """Τι είναι πραγματικά το αρχείο, ανεξάρτητα από την κατάληξή του.
+
+    Μια διεύθυνση που τελειώνει σε `.doc` μπορεί να κρύβει Word, RTF ή σκέτο
+    HTML. Η διαφορά καθορίζει αν διαβάζεται καθόλου, οπότε δεν μαντεύεται από
+    το όνομα.
+    """
+    ypografes = (
+        (b"%PDF-", "PDF"),
+        (b"\xd0\xcf\x11\xe0", "Word (παλαιό δυαδικό .doc — χρειάζεται μετατροπή)"),
+        (b"PK\x03\x04", "ZIP ή .docx"),
+        (b"{\\rtf", "RTF"),
+    )
+    for ypografi, onoma in ypografes:
+        if dedomena.startswith(ypografi):
+            return onoma
+    arxi = dedomena[:400].lstrip().lower()
+    if arxi.startswith((b"<!doctype", b"<html", b"<?xml")):
+        return "HTML ή XML"
+    return "άγνωστη"
+
+
 @app.command()
 def keimeno(
     url: str = typer.Argument(..., help="Η σελίδα ή το αρχείο προς εξέταση."),
@@ -298,6 +320,8 @@ def keimeno(
         except SfalmaLipsis as exc:
             console.print(f"[bold red]✗[/] {exc}")
             raise typer.Exit(code=1) from exc
+
+    console.print(f"[dim]μορφή:[/] {_morfi(apotelesma.perieksomeno)}\n")
 
     if apotelesma.einai_pdf:
         if not exei_epipedo_keimenou(apotelesma.perieksomeno):
