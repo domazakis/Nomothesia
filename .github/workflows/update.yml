@@ -24,6 +24,12 @@ on:
           σύνδεσμοί της — για να βρεθεί πηγή νομοθετήματος που δεν κατεβαίνει.
         required: false
         default: ""
+      filtro:
+        description: >-
+          Όροι χωρισμένοι με κόμμα, για να κρατηθούν μόνο οι σχετικοί σύνδεσμοι
+          (π.χ. «pdf,et.gr»). Ισχύει μόνο μαζί με το προηγούμενο πεδίο.
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -69,10 +75,11 @@ jobs:
         env:
           NOMOTHETIMA: ${{ inputs.nomothetima }}
           SYNDESMOI: ${{ inputs.syndesmoi }}
+          FILTRO: ${{ inputs.filtro }}
         run: |
           set -o pipefail
           if [ -n "$SYNDESMOI" ]; then
-            uv run nomothesia syndesmoi "$SYNDESMOI" 2>&1 | tee /tmp/fetch.log
+            uv run nomothesia syndesmoi "$SYNDESMOI" ${FILTRO:+--filtro "$FILTRO"} 2>&1 | tee /tmp/fetch.log
           elif [ -n "$NOMOTHETIMA" ]; then
             uv run nomothesia fetch --id "$NOMOTHETIMA" -v 2>&1 | tee /tmp/fetch.log
           else

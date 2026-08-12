@@ -193,7 +193,9 @@ def fetch(
 def syndesmoi(
     url: str = typer.Argument(..., help="Η σελίδα που θα εξεταστεί."),
     filtro: str | None = typer.Option(
-        None, help="Κράτα μόνο συνδέσμους που περιέχουν αυτό το κείμενο."
+        None,
+        help="Κράτα όσους συνδέσμους περιέχουν κάποιον από αυτούς τους όρους "
+        "(χωρισμένους με κόμμα).",
     ),
     plithos: int = typer.Option(80, help="Μέγιστο πλήθος αποτελεσμάτων."),
 ) -> None:
@@ -213,8 +215,12 @@ def syndesmoi(
 
     evrethenta = syndesmoi_apo_html(apotelesma.perieksomeno, vasi=url)
     if filtro:
-        oros = filtro.lower()
-        evrethenta = [(k, u) for k, u in evrethenta if oros in u.lower() or oros in k.lower()]
+        oroi = [o.strip().lower() for o in filtro.split(",") if o.strip()]
+        evrethenta = [
+            (k, u)
+            for k, u in evrethenta
+            if any(o in u.lower() or o in k.lower() for o in oroi)
+        ]
 
     console.print(f"[bold]{len(evrethenta)}[/] σύνδεσμοι από {url}\n")
     for keimeno, syndesmos in evrethenta[:plithos]:
