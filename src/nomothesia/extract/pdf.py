@@ -20,36 +20,56 @@ logger = logging.getLogger(__name__)
 
 # Κάτω από τόσες λέξεις, η ανίχνευση στηλών δεν είναι αξιόπιστη.
 ELAXISTES_LEXEIS = 40
-# Ανεκτικότητα σε λέξεις που όντως διασχίζουν το κέντρο (τίτλοι σε όλο το
-# πλάτος, υποσημειώσεις). Πάνω από αυτό το ποσοστό, η σελίδα είναι μονόστηλη.
+# Ανεκτικότητα σε λέξεις που όντως διασχίζουν το αυλάκι (τίτλοι σε όλο το
+# πλάτος, κεφαλίδα σελίδας). Πάνω από αυτό το ποσοστό, η σελίδα είναι μονόστηλη.
 ANEKTIKOTITA_DIASCHISIS = 0.02
+# Πού αναζητείται το αυλάκι, ως ποσοστό του πλάτους της σελίδας.
+ORIA_AVLAKIOU = range(35, 66)
+# Οι κεντραρισμένες επικεφαλίδες των ΦΕΚ τυπώνονται πιο πυκνά από το σώμα, και
+# με την προεπιλογή του pdfplumber τα κενά τους χάνονται: ο τίτλος «Λογιστικός
+# διαχωρισμός» έβγαινε «Λογιστικόςδιαχωρισμός». Το σώμα δεν επηρεάζεται.
+ANOCHI_KENOU = 2
 
 
-def _einai_distili(selida) -> bool:
-    """Αληθές όταν η σελίδα έχει καθαρό κατακόρυφο αυλάκι στο κέντρο.
+def _avlaki(selida) -> float | None:
+    """Η θέση του κατακόρυφου αυλακιού ανάμεσα στις στήλες, ή `None`.
 
-    Μετράμε πόσες λέξεις διασχίζουν την κεντρική κατακόρυφο. Σε μονόστηλη
-    σελίδα τη διασχίζουν συνεχώς· σε διστήλη, σχεδόν καμία.
+    Το αυλάκι **δεν είναι πάντα στο κέντρο**. Στο ΦΕΚ Α΄82/2012 βρίσκεται στο
+    53% του πλάτους: εκεί το διασχίζει μία λέξη, ενώ στο κέντρο σαράντα έξι.
+    Υποθέτοντας το μέσο, η σελίδα κρινόταν μονόστηλη και οι δύο στήλες
+    διαβάζονταν πλεγμένες μεταξύ τους — από τις 740 χιλιάδες χαρακτήρες του
+    νόμου εντοπίζονταν δεκαπέντε άρθρα.
 
-    Προϋποθέτει συμμετρικά περιθώρια, όπως έχουν τα ΦΕΚ. Σε σελίδα με έντονα
-    ασύμμετρες στήλες η κεντρική κατακόρυφος θα έπεφτε μέσα σε στήλη και η
-    σελίδα θα αντιμετωπιστεί ως μονόστηλη — συντηρητικό και ασφαλές σφάλμα,
-    αφού η μονόστηλη ανάγνωση δεν χάνει κείμενο, απλώς μπορεί να το ανακατέψει.
+    Γι' αυτό το αυλάκι αναζητείται αντί να υποτίθεται: δοκιμάζονται θέσεις
+    γύρω από το μέσο και κρατιέται εκείνη που τη διασχίζουν οι λιγότερες
+    λέξεις. Όταν καμία θέση δεν είναι αρκετά «καθαρή», η σελίδα είναι
+    μονόστηλη.
     """
     lexeis = selida.extract_words() or []
     if len(lexeis) < ELAXISTES_LEXEIS:
-        return False
+        return None
 
-    kentro = float(selida.width) / 2
-    diaschizoun = sum(
-        1 for w in lexeis if float(w["x0"]) < kentro < float(w["x1"])
-    )
-    return diaschizoun / len(lexeis) < ANEKTIKOTITA_DIASCHISIS
+    orizontia = [(float(w["x0"]), float(w["x1"])) for w in lexeis]
+    platos = float(selida.width)
+
+    metriseis = []
+    for pososto in ORIA_AVLAKIOU:
+        thesi = platos * pososto / 100
+        metriseis.append((sum(1 for a, b in orizontia if a < thesi < b), thesi))
+
+    ligotera = min(m[0] for m in metriseis)
+    if ligotera / len(lexeis) >= ANEKTIKOTITA_DIASCHISIS:
+        return None
+
+    # Όταν το αυλάκι είναι φαρδύ, πολλές θέσεις ισοβαθμούν. Κρατάμε τη μεσαία,
+    # ώστε η τομή να πέσει στο κέντρο του κενού και όχι στο χείλος του.
+    isovathmes = sorted(thesi for plithos, thesi in metriseis if plithos == ligotera)
+    return isovathmes[len(isovathmes) // 2]
 
 
 def _keimeno_stilis(selida, x0: float, x1: float) -> str:
     perioxi = selida.crop((x0, 0, x1, selida.height))
-    return perioxi.extract_text() or ""
+    return perioxi.extract_text(x_tolerance=ANOCHI_KENOU) or ""
 
 
 def keimeno_apo_pdf(dedomena: bytes) -> str:
@@ -62,12 +82,13 @@ def keimeno_apo_pdf(dedomena: bytes) -> str:
     with pdfplumber.open(io.BytesIO(dedomena)) as pdf:
         for arithmos, selida in enumerate(pdf.pages, start=1):
             try:
-                if _einai_distili(selida):
-                    kentro = float(selida.width) / 2
-                    kommatia.append(_keimeno_stilis(selida, 0, kentro))
-                    kommatia.append(_keimeno_stilis(selida, kentro, float(selida.width)))
+                if (avlaki := _avlaki(selida)) is not None:
+                    kommatia.append(_keimeno_stilis(selida, 0, avlaki))
+                    kommatia.append(_keimeno_stilis(selida, avlaki, float(selida.width)))
                 else:
-                    kommatia.append(selida.extract_text() or "")
+                    kommatia.append(
+                        selida.extract_text(x_tolerance=ANOCHI_KENOU) or ""
+                    )
             except Exception as exc:  # μία κακή σελίδα δεν ακυρώνει το ΦΕΚ
                 logger.warning("σελίδα %d: αποτυχία εξαγωγής (%s)", arithmos, exc)
 
