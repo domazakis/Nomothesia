@@ -35,6 +35,12 @@ on:
           Πόσες σελίδες καταλόγου να διατρέξει η ανίχνευση, μέσω «?page=N».
         required: false
         default: "1"
+      keimeno:
+        description: >-
+          Διεύθυνση πηγής της οποίας θέλουμε να δούμε τι βλέπει ο αγωγός:
+          πόσο κείμενο βγαίνει και πόσα άρθρα αναγνωρίζονται.
+        required: false
+        default: ""
       agnosta:
         description: >-
           Να δείξει μόνο όσα δεν υπάρχουν ήδη στο μητρώο — ο έλεγχος «τι μας
@@ -90,9 +96,12 @@ jobs:
           FILTRO: ${{ inputs.filtro }}
           SELIDES: ${{ inputs.selides }}
           AGNOSTA: ${{ inputs.agnosta }}
+          KEIMENO: ${{ inputs.keimeno }}
         run: |
           set -o pipefail
-          if [ -n "$SYNDESMOI" ]; then
+          if [ -n "$KEIMENO" ]; then
+            uv run nomothesia keimeno "$KEIMENO" 2>&1 | tee /tmp/fetch.log
+          elif [ -n "$SYNDESMOI" ]; then
             uv run nomothesia syndesmoi "$SYNDESMOI" ${FILTRO:+--filtro "$FILTRO"} \
               ${SELIDES:+--selides "$SELIDES"} \
               $([ "$AGNOSTA" = "true" ] && echo --agnosta) 2>&1 | tee /tmp/fetch.log
@@ -114,7 +123,7 @@ jobs:
       - name: Σύνταξη σώματος pull request
         # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
         # το corpus με το ένα νομοθέτημα που ζητήθηκε.
-        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == ''
+        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == '' && inputs.keimeno == ''
         run: |
           {
             echo "Αυτόματη ενημέρωση του corpus από τις επίσημες πηγές."
@@ -133,7 +142,7 @@ jobs:
       - name: Άνοιγμα pull request
         # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
         # το corpus με το ένα νομοθέτημα που ζητήθηκε.
-        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == ''
+        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == '' && inputs.keimeno == ''
         uses: peter-evans/create-pull-request@v7
         with:
           branch: enimerosi-nomothesias

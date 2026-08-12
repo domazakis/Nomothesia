@@ -6,6 +6,7 @@
     nomothesia changes    τι άλλαξε από την τελευταία λήψη
     nomothesia export     knowledge base για φωνητικό agent
     nomothesia syndesmoi  πού οδηγούν οι σύνδεσμοι μιας σελίδας — ανίχνευση πηγών
+    nomothesia keimeno    τι βλέπει ο αγωγός σε μια πηγή — διάγνωση εξαγωγής
 """
 
 from __future__ import annotations
@@ -18,8 +19,11 @@ from rich.table import Table
 
 from nomothesia import changes as ch
 from nomothesia.export import exagoge_nomothetimatos, gia_knowledge_base
-from nomothesia.extract.html import syndesmoi_apo_html
+from nomothesia.extract.html import keimeno_apo_html, syndesmoi_apo_html
+from nomothesia.extract.pdf import exei_epipedo_keimenou, keimeno_apo_pdf
 from nomothesia.fetch.base import Lipsi, SfalmaLipsis
+from nomothesia.normalize.greek import kanonikopoiise
+from nomothesia.normalize.structure import analyse_domi
 from nomothesia.pipeline import SfalmaAgogou, epexergasou
 from nomothesia.registry import (
     Katastasi,
@@ -274,6 +278,45 @@ def _agnosta_nomothetimata(
             continue
         apotelesma.append((keimeno, syndesmos))
     return apotelesma
+
+
+@app.command()
+def keimeno(
+    url: str = typer.Argument(..., help="Η σελίδα ή το αρχείο προς εξέταση."),
+    grammes: int = typer.Option(40, help="Πόσες γραμμές κειμένου να δείξει."),
+) -> None:
+    """Δείχνει τι βλέπει ο αγωγός σε μια πηγή — και τι δομή αναγνωρίζει.
+
+    Το «δεν εντοπίστηκε κανένα άρθρο» λέει ότι κάτι πήγε στραβά, όχι τι. Η
+    εντολή δείχνει τις πρώτες γραμμές του κανονικοποιημένου κειμένου και πόσα
+    άρθρα βρήκε ο parser, ώστε η διαφορά ανάμεσα στο «δεν κατέβηκε» και στο
+    «κατέβηκε αλλά γράφεται αλλιώς» να φαίνεται με μια ματιά.
+    """
+    with Lipsi() as lipsi:
+        try:
+            apotelesma = lipsi.kateveste(url)
+        except SfalmaLipsis as exc:
+            console.print(f"[bold red]✗[/] {exc}")
+            raise typer.Exit(code=1) from exc
+
+    if apotelesma.einai_pdf:
+        if not exei_epipedo_keimenou(apotelesma.perieksomeno):
+            console.print("[bold red]✗[/] σαρωμένο PDF, χωρίς επίπεδο κειμένου")
+            raise typer.Exit(code=1)
+        akatergasto = keimeno_apo_pdf(apotelesma.perieksomeno)
+    else:
+        akatergasto = keimeno_apo_html(apotelesma.perieksomeno)
+
+    kanoniko = kanonikopoiise(akatergasto)
+    arthra = analyse_domi(kanoniko)
+
+    console.print(
+        f"[bold]{len(apotelesma.perieksomeno)}[/] bytes → "
+        f"[bold]{len(kanoniko)}[/] χαρακτήρες → "
+        f"[bold]{len(arthra)}[/] άρθρα\n"
+    )
+    for grammi in kanoniko.split("\n")[:grammes]:
+        console.print(f"  {grammi[:100]}")
 
 
 @app.command()

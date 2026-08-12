@@ -351,6 +351,32 @@ nomothetimata:
   # ΘΕΜΑΤΙΚΗ: ΕΠΑΓΓΕΛΜΑΤΙΚΗ ΟΔΗΓΗΣΗ
   # ─────────────────────────────────────────────────────────────────────────
 
+  - id: nomos-4530-2018
+    titlos: Ρυθμίσεις θεμάτων μεταφορών και άλλες διατάξεις
+    syntomos_titlos: Ε.Δ.Χ. — υποχρεώσεις οδηγών
+    typos: nomos
+    arithmos: "4530"
+    etos: 2018
+    fek: {teuxos: A, arithmos: 59, imerominia: 2018-03-30}
+    thematiki: epaggelmatiki-odigisi
+    proteraiotita: 3
+    katastasi: isxyon
+    epalithevmeno: false
+    perigrafi: >-
+      Το Μέρος Α΄ ρυθμίζει τη λειτουργία των Επιβατηγών Δημόσιας Χρήσης
+      αυτοκινήτων: υποχρεώσεις και απαγορεύσεις για τους οδηγούς ΤΑΞΙ, ειδικής
+      μίσθωσης και ειδικών μεταφορών, κόμιστρα, συμπεριφορά προς επιβάτες.
+    scheseis:
+      tropopoiei: [nomos-4070-2012]
+    piges:
+      - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20180100059"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/nomos-4530-2018-fek-59a-30-3-2018.html"}
+    simeioseis: >-
+      Νόμος γενικού περιεχομένου· μόνο το Μέρος Α΄ αφορά την οδήγηση. Δεν
+      περιορίζεται με `relevanta_arthra` γιατί τα όρια του Μέρους δεν
+      επαληθεύτηκαν — προτιμότερο λίγο επιπλέον κείμενο από αποκομμένες
+      διατάξεις.
+
   - id: nomos-4070-2012
     titlos: >-
       Ρυθμίσεις Ηλεκτρονικών Επικοινωνιών, Μεταφορών, Δημοσίων Έργων και άλλες
