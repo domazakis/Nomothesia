@@ -163,7 +163,9 @@ def test_apotychia_olon_ton_pigon_anaferei_kathe_aitia(kok, deigma):
         epexergasou(kok, lipsi)
 
     minima = str(sfalma.value)
-    assert "et.gr" in minima and "kodiko.gr" in minima
+    # Και η επίσημη πηγή και η εναλλακτική πρέπει να αναφέρονται με τον λόγο τους.
+    assert "et.gr" in minima
+    assert "e-nomothesia.gr" in minima
 
 
 def test_paragomeno_jsonl_einai_egkyro(kok, deigma, tmp_path):
