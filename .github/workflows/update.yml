@@ -120,6 +120,14 @@ jobs:
             uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
           fi
 
+      # Χωρίς αυτό, το corpus ενημερώνεται και το knowledge base μένει πίσω —
+      # και κανείς δεν το προσέχει, γιατί το pull request δείχνει πράσινο.
+      - name: Παραγωγή knowledge base
+        # Δεν σταματά το run: το corpus είναι το πολύτιμο, το export παράγεται
+        # ξανά ανά πάσα στιγμή με μία εντολή.
+        continue-on-error: true
+        run: uv run nomothesia export
+
       - name: Εντοπισμός αλλαγών
         id: diff
         env:
@@ -128,7 +136,7 @@ jobs:
           KEIMENO: ${{ inputs.keimeno }}
           APOTHIKEFSI: ${{ inputs.apothikefsi }}
         run: |
-          if [ -n "$(git status --porcelain corpus/)" ]; then
+          if [ -n "$(git status --porcelain corpus/ export/)" ]; then
             echo "allages=nai" >> "$GITHUB_OUTPUT"
           else
             echo "allages=ochi" >> "$GITHUB_OUTPUT"
@@ -155,6 +163,18 @@ jobs:
               echo "> περιέχει μόνο όσα νομοθετήματα κατέβηκαν σωστά."
               echo
             fi
+            allagmena=$(git status --porcelain export/ | awk '{print $NF}')
+            if [ -n "$allagmena" ]; then
+              echo "### Για ανέβασμα στο knowledge base του πράκτορα"
+              echo
+              echo "Αυτά τα αρχεία άλλαξαν και πρέπει να αντικατασταθούν:"
+              echo
+              for arxeio in $allagmena; do
+                echo "- \`$arxeio\`"
+                echo "  https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.repository.default_branch || 'main' }}/$arxeio"
+              done
+              echo
+            fi
             echo '```'
             cat /tmp/fetch.log
             echo '```'
@@ -168,7 +188,9 @@ jobs:
           title: "Ενημέρωση νομοθεσίας"
           commit-message: "Ενημέρωση corpus από τις επίσημες πηγές"
           body-path: /tmp/pr-body.md
-          add-paths: corpus/
+          add-paths: |
+            corpus/
+            export/
           delete-branch: true
 
       # Χωρίς περίληψη, ένα run που δεν άνοιξε PR δεν λέει τίποτα: δεν ξεχωρίζει
