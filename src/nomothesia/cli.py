@@ -4,6 +4,7 @@
     nomothesia status     τι υπάρχει και τι λείπει από το corpus
     nomothesia fetch      λήψη και ενημέρωση των κειμένων
     nomothesia changes    τι άλλαξε από την τελευταία λήψη
+    nomothesia syndesmoi  πού οδηγούν οι σύνδεσμοι μιας σελίδας — ανίχνευση πηγών
 """
 
 from __future__ import annotations
@@ -15,7 +16,8 @@ from rich.console import Console
 from rich.table import Table
 
 from nomothesia import changes as ch
-from nomothesia.fetch.base import Lipsi
+from nomothesia.extract.html import syndesmoi_apo_html
+from nomothesia.fetch.base import Lipsi, SfalmaLipsis
 from nomothesia.pipeline import SfalmaAgogou, epexergasou
 from nomothesia.registry import Katastasi, Mitroo, Nomothetima, fortose_mitroo
 
@@ -185,6 +187,40 @@ def fetch(
 
     if apotyxies:
         raise typer.Exit(code=1)
+
+
+@app.command()
+def syndesmoi(
+    url: str = typer.Argument(..., help="Η σελίδα που θα εξεταστεί."),
+    filtro: str | None = typer.Option(
+        None, help="Κράτα μόνο συνδέσμους που περιέχουν αυτό το κείμενο."
+    ),
+    plithos: int = typer.Option(80, help="Μέγιστο πλήθος αποτελεσμάτων."),
+) -> None:
+    """Δείχνει τους συνδέσμους μιας σελίδας — για ανίχνευση νέων πηγών.
+
+    Όταν η επίσημη πηγή δεν κατεβαίνει, το ερώτημα γίνεται «ποια σελίδα έχει
+    αυτόν τον νόμο και πού δείχνει». Η εντολή απαντά χωρίς μαντεψιές, και
+    τρέχει και μέσα από το GitHub Action για περιβάλλοντα που δεν έχουν τα
+    ίδια δικαιώματα δικτύου.
+    """
+    with Lipsi() as lipsi:
+        try:
+            apotelesma = lipsi.kateveste(url)
+        except SfalmaLipsis as exc:
+            console.print(f"[bold red]✗[/] {exc}")
+            raise typer.Exit(code=1) from exc
+
+    evrethenta = syndesmoi_apo_html(apotelesma.perieksomeno, vasi=url)
+    if filtro:
+        oros = filtro.lower()
+        evrethenta = [(k, u) for k, u in evrethenta if oros in u.lower() or oros in k.lower()]
+
+    console.print(f"[bold]{len(evrethenta)}[/] σύνδεσμοι από {url}\n")
+    for keimeno, syndesmos in evrethenta[:plithos]:
+        console.print(f"  {keimeno[:70] or '—'}\n    [dim]{syndesmos}[/]")
+    if len(evrethenta) > plithos:
+        console.print(f"\n[dim]…και {len(evrethenta) - plithos} ακόμη.[/]")
 
 
 @app.command()

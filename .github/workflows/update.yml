@@ -18,6 +18,12 @@ on:
           περιμένεις και τα είκοσι. Κενό σημαίνει όλα.
         required: false
         default: ""
+      syndesmoi:
+        description: >-
+          Διεύθυνση σελίδας προς εξέταση, αντί για λήψη. Δείχνει πού οδηγούν οι
+          σύνδεσμοί της — για να βρεθεί πηγή νομοθετήματος που δεν κατεβαίνει.
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -62,9 +68,12 @@ jobs:
         # script: ό,τι γράψει κανείς στο πεδίο δεν εκτελείται ως εντολή.
         env:
           NOMOTHETIMA: ${{ inputs.nomothetima }}
+          SYNDESMOI: ${{ inputs.syndesmoi }}
         run: |
           set -o pipefail
-          if [ -n "$NOMOTHETIMA" ]; then
+          if [ -n "$SYNDESMOI" ]; then
+            uv run nomothesia syndesmoi "$SYNDESMOI" 2>&1 | tee /tmp/fetch.log
+          elif [ -n "$NOMOTHETIMA" ]; then
             uv run nomothesia fetch --id "$NOMOTHETIMA" -v 2>&1 | tee /tmp/fetch.log
           else
             uv run nomothesia fetch 2>&1 | tee /tmp/fetch.log
@@ -82,7 +91,7 @@ jobs:
       - name: Σύνταξη σώματος pull request
         # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
         # το corpus με το ένα νομοθέτημα που ζητήθηκε.
-        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == ''
+        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == ''
         run: |
           {
             echo "Αυτόματη ενημέρωση του corpus από τις επίσημες πηγές."
@@ -101,7 +110,7 @@ jobs:
       - name: Άνοιγμα pull request
         # Η στοχευμένη εκτέλεση είναι διαγνωστική: δεν πρέπει να αντικαταστήσει
         # το corpus με το ένα νομοθέτημα που ζητήθηκε.
-        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == ''
+        if: steps.diff.outputs.allages == 'nai' && inputs.nomothetima == '' && inputs.syndesmoi == ''
         uses: peter-evans/create-pull-request@v7
         with:
           branch: enimerosi-nomothesias
