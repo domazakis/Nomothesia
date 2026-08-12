@@ -238,12 +238,19 @@ def _apo_pigi(
         )
 
     arthra = _filtrare_arthra(n, analyse_domi(keimeno))
-    arthra = _me_sympliromata(n, arthra, lipsi, proeidopoiiseis)
     if not arthra:
         raise SfalmaAgogou(
             "δεν εντοπίστηκε κανένα άρθρο. Πιθανή αιτία: αλλαγή "
             "διάταξης στην πηγή ή λάθος URL."
         )
+
+    # Μετά τον έλεγχο, ποτέ πριν. Το συμπλήρωμα προσθέτει σε πηγή που πέτυχε·
+    # αν εφαρμοζόταν νωρίτερα, θα κρατούσε ζωντανή μια πηγή που δεν απέδωσε
+    # τίποτα. Ακριβώς αυτό συνέβη: η κωδικοποιημένη σελίδα του π.δ. 237/1986
+    # είναι πίσω από συνδρομή και δίνει μηδέν άρθρα, αλλά με τα δεκατέσσερα
+    # του συμπληρώματος έμοιαζε επιτυχημένη — και ο αγωγός δεν έφτασε ποτέ
+    # στο αντίγραφο Word που έχει τα υπόλοιπα σαράντα τέσσερα.
+    arthra = _me_sympliromata(n, arthra, lipsi, proeidopoiiseis)
 
     fakelos = n.fakelos_corpus()
     fakelos.mkdir(parents=True, exist_ok=True)

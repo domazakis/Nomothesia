@@ -1,6 +1,6 @@
 {
   "enimerosi": "2026-08-12",
-  "plithos": 12,
+  "plithos": 13,
   "nomothetimata": {
     "kok-5209-2025": {
       "checksum_pigis": "2ae6d4b3e09f5a25090cdf20ceba5afe98f596ac618777d9b9dbcc232ca4d51b",
@@ -64,6 +64,14 @@
       "plithos_arthron": 9,
       "plithos_paragrafon": 29,
       "pigi_url": "file:sources/fek/20260100117.pdf",
+      "epalithevmeno_fek": true
+    },
+    "pd-237-1986": {
+      "checksum_pigis": "df557f4e88251a4b4b1633be949ba608a1233715665a09f69ac47b9deda63123",
+      "checksum_keimenou": "0450be429c5751314578bfeb3d06ba1dae9d7ff6cdd5f84589e31bf657b81430",
+      "plithos_arthron": 14,
+      "plithos_paragrafon": 32,
+      "pigi_url": "https://www.e-nomothesia.gr/kat-aytokinita/pd-237-1986.html",
       "epalithevmeno_fek": true
     },
     "pd-51-2012": {

@@ -255,3 +255,29 @@ def test_to_sympliroma_gemizei_mono_ta_kena(kok, deigma, tmp_path):
     keimeno_5 = " ".join(g["keimeno"] for g in grammes if g["arthro"] == "5")
     assert "Από το συμπλήρωμα" not in keimeno_5
     assert any("συμπλήρωμα" in p for p in apotelesma.proeidopoiiseis)
+
+
+def test_to_sympliroma_den_sozei_pigi_pou_apetyche(kok, deigma):
+    """Το συμπλήρωμα προσθέτει σε πηγή που πέτυχε — δεν την αντικαθιστά.
+
+    Η κωδικοποιημένη σελίδα του π.δ. 237/1986 είναι πίσω από συνδρομή και
+    δίνει μηδέν άρθρα. Με το συμπλήρωμα να εφαρμόζεται νωρίτερα, έμοιαζε
+    επιτυχημένη και ο αγωγός δεν έφτανε ποτέ στην πηγή που έχει το κείμενο.
+    """
+    kok.piges = [
+        Pigi(typos=TyposPigis.KODIKOPOIIMENO_HTML, url="https://synromi/adeia"),
+        Pigi(typos=TyposPigis.DOC_ALLI_PIGI, url="https://pigi/word"),
+        Pigi(typos=TyposPigis.SYMPLIROMA, url="https://opou/sympliroma.txt"),
+    ]
+    lipsi = LipsiAnaUrl(
+        {
+            "https://synromi/adeia": "Τίτλος και ετικέτες, χωρίς άρθρα.".encode(),
+            "https://pigi/word": deigma,
+            "https://opou/sympliroma.txt": "Άρθρο 99\nΤέλος\n1. Ισχύει.\n".encode(),
+        }
+    )
+
+    apotelesma = epexergasou(kok, lipsi)
+
+    assert apotelesma.pigi_url == "https://pigi/word"
+    assert apotelesma.plithos_arthron == 5
