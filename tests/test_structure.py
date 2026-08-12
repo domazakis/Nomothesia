@@ -150,3 +150,47 @@ def test_titlos_enotitas_se_dyo_seires_enonetai():
     (arthro,) = analyse_domi(keimeno)
     assert arthro.meros.titlos == "ΣΗΜΑΝΣΗ - ΣΗΜΑΤΟΔΟΤΗΣΗ - ΟΔΙΚΗ ΣΥΜΠΕΡΙΦΟΡΑ"
     assert arthro.titlos == "Τροχονόμοι"
+
+
+# ── Παλιά νομοτεχνική ────────────────────────────────────────────────────
+#
+# Οι νόμοι της δεκαετίας του '70 και του '80 γράφουν «Άρθρον» και συχνά βάζουν
+# τελεία μετά τον αριθμό. Χωρίς αυτό, ο ν. 489/1976 και το π.δ. 237/1986
+# κατέβαιναν κανονικά και πετάγονταν ως «κείμενο χωρίς άρθρα».
+
+
+def test_anagnorizei_to_arthron_ton_palaion_nomon():
+    keimeno = (
+        "Άρθρον 1\n"
+        "Υποχρέωσις ασφαλίσεως\n"
+        "1. Ο κύριος του οχήματος υποχρεούται εις ασφάλισιν.\n"
+        "Άρθρον 2.\n"
+        "Έκτασις ασφαλιστικής καλύψεως\n"
+        "1. Η ασφάλισις καλύπτει την έναντι τρίτων ευθύνην.\n"
+    )
+    arthra = analyse_domi(keimeno)
+    assert [a.arithmos for a in arthra] == ["1", "2"]
+    assert arthra[1].titlos == "Έκτασις ασφαλιστικής καλύψεως"
+
+
+def test_i_teleia_meta_ton_arithmo_den_mpainei_ston_arithmo():
+    (arthro,) = analyse_domi("Άρθρον 15.\nΤίτλος\n1. Κείμενο.\n")
+    assert arthro.arithmos == "15"
+
+
+def test_parapompi_me_peza_den_theoreitai_epikefalida():
+    """«άρθρο 57.» μέσα σε πρόταση δεν είναι αρχή άρθρου.
+
+    Στη διστήλη του ΦΕΚ μια τέτοια παραπομπή πέφτει συχνά στην αρχή γραμμής.
+    Στον ΚΟΚ έκοβε το άρθρο 57 στα δύο, με τη μισή διάταξη να γίνεται τίτλος.
+    """
+    keimeno = (
+        "Άρθρο 57\n"
+        "Διαστάσεις και βάρη\n"
+        "1. Τα οχήματα ακινητοποιούνται σύμφωνα με το\n"
+        "άρθρο 57.\n"
+        "2. Οι παραβάσεις κατατάσσονται στην κατηγορία γ΄.\n"
+    )
+    (arthro,) = analyse_domi(keimeno)
+    assert arthro.titlos == "Διαστάσεις και βάρη"
+    assert len(arthro.paragrafoi) == 2

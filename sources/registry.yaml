@@ -78,10 +78,14 @@ nomothetimata:
       tropopoiei: [kok-5209-2025]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20260100117"}
-      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-5322-2026.html"}
     simeioseis: >-
       Μόνο τα άρθρα 73-81 αφορούν την οδήγηση. Ο fetcher κατεβάζει ολόκληρο το
       ΦΕΚ αλλά η εξαγωγή περιορίζεται στα άρθρα του `relevanta_arthra`.
+      ΕΚΚΡΕΜΕΙ ΠΗΓΗ: το ΦΕΚ δεν κατεβαίνει και δεν βρέθηκε εναλλακτική. Είναι
+      νόμος κοινωνικής πολιτικής, οπότε δεν κατατάσσεται στα αυτοκίνητα και το
+      μοτίβο διευθύνσεων των υπολοίπων δεν ισχύει. Χωρίς αυτόν, το corpus
+      περιγράφει τον ΚΟΚ όπως δημοσιεύθηκε, χωρίς τις τροποποιήσεις του 2026
+      για τα Ε.Π.Η.Ο.
 
   - id: kok-2696-1999
     titlos: Κύρωση του Κώδικα Οδικής Κυκλοφορίας
@@ -248,7 +252,7 @@ nomothetimata:
       tropopoieitai_apo: [nomos-5322-2026]
     piges:
       - {typos: fek_pdf, url: "https://www.et.gr/api/DownloadFeksApi/?fek_pdf=20210100040"}
-      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/kat-aytokinita/n-4784-2021.html"}
+      - {typos: kodikopoiimeno_html, url: "https://www.e-nomothesia.gr/sygkoinonies-metafores/nomos-4784-2021.html"}
 
   # ─────────────────────────────────────────────────────────────────────────
   # ΘΕΜΑΤΙΚΗ: ΑΣΦΑΛΙΣΗ ΚΑΙ ΤΕΛΗ
