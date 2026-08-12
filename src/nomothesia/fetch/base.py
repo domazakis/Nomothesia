@@ -38,6 +38,23 @@ USER_AGENT = (
     "+https://github.com/domazakis/Nomothesia)"
 )
 
+# Ένα αίτημα μόνο με User-Agent είναι ελλιπές, και κάποιοι διακομιστές το
+# κλείνουν χωρίς καν να απαντήσουν — το lawspot.gr το κάνει. Δηλώνουμε τι
+# δεχόμαστε και σε ποια γλώσσα, όπως κάθε σωστός πελάτης HTTP.
+#
+# Δεν μεταμφιεζόμαστε σε browser: το User-Agent παραμένει ταυτοποιήσιμο και
+# δείχνει στο repository. Αν ένας διακομιστής μας απορρίπτει επειδή δηλώνουμε
+# ποιοι είμαστε, αυτό είναι απάντηση που τη σεβόμαστε, όχι εμπόδιο να
+# παρακαμφθεί.
+KEFALIDES = {
+    "User-Agent": USER_AGENT,
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "application/pdf;q=0.9,*/*;q=0.8"
+    ),
+    "Accept-Language": "el-GR,el;q=0.9,en;q=0.8",
+}
+
 PAUSI_METAXY_AITIMATON = 2.0
 MEGISTES_PROSPATHEIES = 4
 XRONOS_ANAMONIS = 60.0
@@ -105,7 +122,7 @@ class Lipsi:
 
     def _neos_client(self) -> httpx.Client:
         return httpx.Client(
-            headers={"User-Agent": USER_AGENT},
+            headers=KEFALIDES,
             timeout=self.timeout,
             follow_redirects=True,
             verify=context_me_endiamesa(self._epipleon_pem),
