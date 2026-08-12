@@ -232,9 +232,14 @@ def test_titlos_pou_den_teleionei_pote_den_einai_titlos():
     assert "Κατά την έννοια του παρόντος" in arthra[0].keimeno
 
 
-def test_epikefalida_mesa_se_eisagogika_anagnorizetai():
-    """Οι νομικές βάσεις τυπώνουν σε εισαγωγικά ό,τι αντικαταστάθηκε."""
-    arthra = analyse_domi('"Άρθρο 8"\nΜεταβίβαση\n1. Αν μεταβιβαστεί η κυριότητα.')
+def test_epikefalida_se_eisagogika_den_einai_arthro_tou_nomou():
+    """Ο τροποποιητικός νόμος παραθέτει τις επικεφαλίδες όσων τροποποιεί.
 
-    assert [a.arithmos for a in arthra] == ["8"]
-    assert arthra[0].titlos == "Μεταβίβαση"
+    «Το άρθρο 8 αντικαθίσταται ως εξής: "Άρθρο 8 …"» — αν η παράθεση περνούσε
+    για επικεφαλίδα, ο ν. 5113/2024 θα αποκτούσε τα άρθρα του π.δ. 237/1986.
+    """
+    arthra = analyse_domi(
+        'Άρθρο 4\nΤροποποίηση\n1. Το άρθρο 8 αντικαθίσταται:\n"Άρθρο 8\nΜεταβίβαση."'
+    )
+
+    assert [a.arithmos for a in arthra] == ["4"]

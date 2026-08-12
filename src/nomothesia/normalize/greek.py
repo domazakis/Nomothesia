@@ -135,9 +135,9 @@ def metafrase_deiktes_vasis(keimeno: str) -> str:
         if arithmos == "0":
             return "\n"
         epomena = keimeno[m.end() : m.end() + AKTINA_EPIKEFALIDAS]
-        idia = re.compile(
-            rf"(?m)^[ \t]*[\"'«]?[ \t]*[ΆΑ]ρθρο[νυΝΥ]?[ \t]+{arithmos}[ \t]*[.:]?[ \t]*$"
-        )
+        # Ο έλεγχος μιμείται ακριβώς όσα δέχεται ο parser δομής: αν εκείνος
+        # δεν θα αναγνώριζε την επικεφαλίδα, ο δείκτης χρειάζεται.
+        idia = re.compile(rf"(?m)^[ \t]*[ΆΑ]ρθρο[νΝ]?[ \t]+{arithmos}[ \t]*[.:]?[ \t]*$")
         return "\n" if idia.search(epomena) else f"\nΆρθρο {arithmos}\n"
 
     return DEIKTIS_ARTHROU.sub(antikatastasi, keimeno)
