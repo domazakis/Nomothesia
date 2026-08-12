@@ -117,12 +117,26 @@ def grapse_articles_jsonl(
     epalithevthike = n.epalithevmeno if epalithevmeno is None else epalithevmeno
     diadromi = fakelos / "articles.jsonl"
 
+    # Το αναγνωριστικό είναι το κλειδί της εγγραφής σε κάθε βάση ανάκτησης:
+    # δύο εγγραφές με το ίδιο κλειδί σημαίνουν ότι η μία σβήνει την άλλη ή ότι
+    # το ίδιο απόσπασμα μετράει διπλά. Στο π.δ. 237/1986 συνέβαινε επειδή η
+    # πηγή παραθέτει και την παλιά και τη νέα γραφή μιας παραγράφου, οπότε το
+    # άρθρο 5 είχε δύο παραγράφους «1». Η δεύτερη παίρνει κατάληξη· η πρώτη
+    # μένει όπως ήταν, ώστε τα υπάρχοντα αναγνωριστικά να μην αλλάξουν.
+    idomena: set[str] = set()
+
     with diadromi.open("w", encoding="utf-8") as f:
         for a in arthra:
             for p in a.paragrafoi:
                 anagnoristiko = f"{n.id}:art-{a.arithmos}"
                 if p.arithmos:
                     anagnoristiko += f":par-{p.arithmos}"
+                if anagnoristiko in idomena:
+                    seira = 2
+                    while f"{anagnoristiko}-{seira}" in idomena:
+                        seira += 1
+                    anagnoristiko = f"{anagnoristiko}-{seira}"
+                idomena.add(anagnoristiko)
                 eggrafi = {
                     "id": anagnoristiko,
                     "nomothetima_id": n.id,
