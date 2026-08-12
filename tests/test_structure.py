@@ -243,3 +243,18 @@ def test_epikefalida_se_eisagogika_den_einai_arthro_tou_nomou():
     )
 
     assert [a.arithmos for a in arthra] == ["4"]
+
+
+def test_arthro_mias_protasis_kratai_to_keimeno_tou():
+    """Ένα άρθρο με τίτλο και χωρίς κείμενο δεν υπάρχει.
+
+    Το άρθρο 16 του π.δ. 237/1986 είναι μία πρόταση. Περνώντας ολόκληρο για
+    τίτλο, το άρθρο έμενε χωρίς παραγράφους — και επειδή το articles.jsonl
+    γράφει μία γραμμή ανά παράγραφο, εξαφανιζόταν από την ανάκτηση.
+    """
+    arthra = analyse_domi(
+        "Άρθρο 16\nΣυνιστάται νομικό πρόσωπο με την επωνυμία «Επικουρικό Κεφάλαιο»."
+    )
+
+    assert arthra[0].titlos == ""
+    assert "Επικουρικό Κεφάλαιο" in arthra[0].keimeno

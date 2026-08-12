@@ -261,6 +261,14 @@ def analyse_domi(keimeno: str) -> list[Arthro]:
 
         grammes = soma.strip().split("\n")
         plithos_titlou = _titlos_arthrou(grammes)
+        # Ένα άρθρο με τίτλο και χωρίς κείμενο δεν υπάρχει. Το άρθρο 16 του
+        # π.δ. 237/1986 είναι μία πρόταση — «Συνιστάται νομικό πρόσωπο με την
+        # επωνυμία Επικουρικό Κεφάλαιο» — και ολόκληρο περνούσε για τίτλο.
+        # Το άρθρο έμενε τότε χωρίς παραγράφους, και επειδή το articles.jsonl
+        # γράφει μία γραμμή ανά παράγραφο, εξαφανιζόταν από την ανάκτηση:
+        # φαινόταν στο full.md και δεν βρισκόταν ποτέ.
+        if not "".join(grammes[plithos_titlou:]).strip():
+            plithos_titlou = 0
         titlos = _enose_titlo([g.strip() for g in grammes[:plithos_titlou]])
         if plithos_titlou:
             soma = "\n".join(grammes[plithos_titlou:])

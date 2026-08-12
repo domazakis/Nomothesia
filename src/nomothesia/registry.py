@@ -56,6 +56,10 @@ class TyposPigis(StrEnum):
     # μορφή, και κάποτε είναι το μόνο αναγνώσιμο κείμενο ενός νομοθετήματος
     # που στο ΦΕΚ υπάρχει μόνο σαρωμένο. Δες extract/doc.py.
     DOC_ALLI_PIGI = "doc_alli_pigi"
+    # Δεν είναι εναλλακτική πηγή αλλά **προσθήκη** σε όποια πηγή πετύχει:
+    # άρθρα που λείπουν από το κείμενο της κύριας πηγής. Δες
+    # sources/keimena/README.md.
+    SYMPLIROMA = "sympliroma"
     # Αντίγραφο ΦΕΚ μέσα στο repository, για όταν η επίσημη πηγή είναι
     # απρόσιτη. Δες sources/fek/README.md.
     TOPIKO_FEK = "topiko_fek"

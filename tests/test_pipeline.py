@@ -12,7 +12,7 @@ import pytest
 
 from nomothesia.fetch.base import ApotelesmaLipsis, SfalmaLipsis
 from nomothesia.pipeline import SfalmaAgogou, epexergasou
-from nomothesia.registry import fortose_mitroo
+from nomothesia.registry import Pigi, TyposPigis, fortose_mitroo
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -203,3 +203,55 @@ def test_keimeno_paragrafou_den_exei_alages_grammis(kok, deigma, tmp_path):
     grammes = (tmp_path / kok.id / "articles.jsonl").read_text(encoding="utf-8").splitlines()
     for gr in grammes:
         assert "\n" not in json.loads(gr)["keimeno"]
+
+
+
+class LipsiAnaUrl(PsevdiLipsi):
+    """Λήψη που σερβίρει διαφορετικό περιεχόμενο ανά διεύθυνση."""
+
+    def __init__(self, ana_url: dict[str, bytes]) -> None:
+        super().__init__(b"")
+        self.ana_url = ana_url
+
+    def kateveste(self, url: str, *, agnoise_cache: bool = False) -> ApotelesmaLipsis:
+        self.aitimata.append(url)
+        return ApotelesmaLipsis(
+            perieksomeno=self.ana_url[url],
+            url=url,
+            apo_cache=False,
+            typos_perieksomenou="text/html",
+        )
+
+
+def test_to_sympliroma_gemizei_mono_ta_kena(kok, deigma, tmp_path):
+    """Το συμπλήρωμα προσθέτει όσα άρθρα λείπουν — δεν ξαναγράφει όσα υπάρχουν.
+
+    Η κύρια πηγή μένει η καλύτερη για ό,τι έχει· το συμπλήρωμα υπάρχει επειδή
+    καμία πηγή του π.δ. 237/1986 δεν δίνει και τα πενήντα οκτώ άρθρα του.
+    """
+    kok.piges = [
+        Pigi(typos=TyposPigis.FEK_PDF, url="https://et.gr/fek"),
+        Pigi(typos=TyposPigis.SYMPLIROMA, url="https://opou/sympliroma.txt"),
+    ]
+    lipsi = LipsiAnaUrl(
+        {
+            "https://et.gr/fek": deigma,
+            "https://opou/sympliroma.txt": (
+                "Άρθρο 5\nΑπό το συμπλήρωμα, όχι από το ΦΕΚ.\n\n"
+                "Άρθρο 99\nΤελικές διατάξεις\n1. Το τελευταίο άρθρο.\n"
+            ).encode(),
+        }
+    )
+
+    apotelesma = epexergasou(kok, lipsi)
+
+    grammes = [
+        json.loads(gr)
+        for gr in (tmp_path / kok.id / "articles.jsonl").read_text().splitlines()
+    ]
+    arithmoi = sorted({g["arthro"] for g in grammes}, key=int)
+    assert arithmoi == ["1", "5", "6", "99", "132"]
+    # Το άρθρο 5 υπήρχε ήδη στο ΦΕΚ και δεν αντικαταστάθηκε.
+    keimeno_5 = " ".join(g["keimeno"] for g in grammes if g["arthro"] == "5")
+    assert "Από το συμπλήρωμα" not in keimeno_5
+    assert any("συμπλήρωμα" in p for p in apotelesma.proeidopoiiseis)

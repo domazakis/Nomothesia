@@ -62,9 +62,10 @@ def _seira_pigon(n: Nomothetima) -> list:
     για να χρησιμοποιηθούν: το et.gr πέφτει, μπλοκάρει διευθύνσεις ή αλλάζει
     endpoint, και τότε η κωδικοποιημένη έκδοση είναι προτιμότερη από το τίποτα.
     """
+    ypopsifies = [p for p in n.piges if p.typos is not TyposPigis.SYMPLIROMA]
     seira = PROTERAIOTITA_PIGON.get(n.typos, PROTERAIOTITA_EX_ORISMOU)
-    taxinomimenes = [pigi for typos in seira for pigi in n.piges if pigi.typos is typos]
-    ypoloipes = [pigi for pigi in n.piges if pigi not in taxinomimenes]
+    taxinomimenes = [pigi for typos in seira for pigi in ypopsifies if pigi.typos is typos]
+    ypoloipes = [pigi for pigi in ypopsifies if pigi not in taxinomimenes]
     if not (taxinomimenes or ypoloipes):
         raise SfalmaAgogou(f"{n.id}: καμία διαθέσιμη πηγή")
     return taxinomimenes + ypoloipes
@@ -149,6 +150,53 @@ def _minima_ptosis(pigi) -> str:
     )
 
 
+def _me_sympliromata(
+    n: Nomothetima, arthra: list[Arthro], lipsi: Lipsi, proeidopoiiseis: list[str]
+) -> list[Arthro]:
+    """Προσθέτει τα άρθρα που λείπουν από την κύρια πηγή.
+
+    Καμία πηγή του π.δ. 237/1986 δεν δίνει και τα πενήντα οκτώ άρθρα του: το
+    μόνο αντίγραφο που κατεβαίνει σταματά στο δέκα και ξαναρχίζει στο είκοσι
+    πέντε. Το συμπλήρωμα καλύπτει το κενό χωρίς να αντικαταστήσει την κύρια
+    πηγή, η οποία παραμένει καλύτερη για όσα άρθρα έχει.
+
+    Γι' αυτό ακριβώς ό,τι ήδη υπάρχει **δεν** αντικαθίσταται: το συμπλήρωμα
+    γεμίζει τρύπες, δεν ξαναγράφει άρθρα.
+    """
+    sympliromata = [p for p in n.piges if p.typos is TyposPigis.SYMPLIROMA]
+    if not sympliromata:
+        return arthra
+
+    yparxonta = {a.arithmos for a in arthra}
+    prostheta: list[Arthro] = []
+    for pigi in sympliromata:
+        try:
+            apotelesma = lipsi.kateveste(pigi.url)
+        except SfalmaLipsis as exc:
+            proeidopoiiseis.append(f"το συμπλήρωμα {pigi.url} δεν διαβάστηκε: {exc}")
+            continue
+        keimeno = kanonikopoiise(apotelesma.perieksomeno.decode("utf-8"))
+        nea = [a for a in analyse_domi(keimeno) if a.arithmos not in yparxonta]
+        yparxonta.update(a.arithmos for a in nea)
+        prostheta.extend(nea)
+
+    if not prostheta:
+        return arthra
+
+    proeidopoiiseis.append(
+        "άρθρα από συμπλήρωμα, όχι από την κύρια πηγή: "
+        + ", ".join(a.arithmos for a in prostheta)
+    )
+    # Η σειρά του εγγράφου δεν ισχύει πια — τα συμπληρωμένα άρθρα θα έμεναν
+    # στο τέλος. Ταξινομούνται αριθμητικά, με το γράμμα (17Α) μετά το σκέτο.
+    return sorted(arthra + prostheta, key=_kleidi_seiras)
+
+
+def _kleidi_seiras(a: Arthro) -> tuple[int, str]:
+    arithmitiko = "".join(ch for ch in a.arithmos if ch.isdigit())
+    return (int(arithmitiko) if arithmitiko else 0, a.arithmos)
+
+
 def _apo_pigi(
     n: Nomothetima, pigi, lipsi: Lipsi, *, agnoise_cache: bool
 ) -> ApotelesmaAgogou:
@@ -190,6 +238,7 @@ def _apo_pigi(
         )
 
     arthra = _filtrare_arthra(n, analyse_domi(keimeno))
+    arthra = _me_sympliromata(n, arthra, lipsi, proeidopoiiseis)
     if not arthra:
         raise SfalmaAgogou(
             "δεν εντοπίστηκε κανένα άρθρο. Πιθανή αιτία: αλλαγή "
