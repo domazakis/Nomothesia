@@ -51,3 +51,40 @@ def test_kleidi_anazitisis_agnoei_tonous_kai_peza():
 
 def test_kleidi_anazitisis_enopoiei_teliko_sigma():
     assert kleidi_anazitisis("οδός") == kleidi_anazitisis("οδοσ")
+
+
+def test_o_deiktis_tis_vasis_ginetai_epikefalida():
+    """Στις εξαγωγές της βάσης ΝΟΜΟΣ η επικεφαλίδα κρύβεται μέσα στη γραμμή.
+
+    Το «Αρθρο :8» κολλάει στο σχόλιο του προηγούμενου άρθρου, οπότε η κανονική
+    επικεφαλίδα που ακολουθεί δεν βρίσκεται ποτέ στην αρχή γραμμής και το
+    άρθρο χάνεται ολόκληρο.
+    """
+    akatergasto = (
+        '*** Το άρθρο 7 αντικαταστάθηκε με το ΠΔ 264/1991. Αρθρο :8 '
+        'Πληροφορίες Νομολογίας & Αρθρογραφίας :1 Προισχύσασες μορφές '
+        'άρθρου :2 "Άρθρο 8\n1. Αν μεταβιβαστεί η κυριότητα του οχήματος.'
+    )
+
+    kanoniko = kanonikopoiise(akatergasto)
+
+    assert "Άρθρο 8" in kanoniko.split("\n")
+    assert "Πληροφορίες" not in kanoniko
+    assert "Προισχύσασες" not in kanoniko
+
+
+def test_to_proimio_tis_vasis_den_ginetai_arthro_miden():
+    """Το «Αρθρο :0» της βάσης στεγάζει το προοίμιο, όχι άρθρο."""
+    kanoniko = kanonikopoiise("Τίτλος νομοθετήματος Αρθρο :0 Έχοντας υπόψη:")
+
+    assert "Άρθρο 0" not in kanoniko
+    assert "Έχοντας υπόψη" in kanoniko
+
+
+def test_i_epanalipsi_tis_epikefalidas_den_ginetai_titlos():
+    """Μετά τον δείκτη, το έγγραφο ξαναγράφει μόνο του την επικεφαλίδα."""
+    kanoniko = kanonikopoiise('Αρθρο :34 "Αρθρο 34 Με απόφαση του Υπουργού.')
+
+    assert kanoniko.startswith("Άρθρο 34\n")
+    assert "Με απόφαση του Υπουργού." in kanoniko
+    assert kanoniko.count("34") == 1

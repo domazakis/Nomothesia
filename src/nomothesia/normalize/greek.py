@@ -60,6 +60,29 @@ MOTIVA_THORYVOU = [
     re.compile(r"^\s*$"),
 ]
 
+# ── Αποτυπώματα νομικών βάσεων δεδομένων ───────────────────────────────────
+# Οι εξαγωγές από τη βάση ΝΟΜΟΣ φέρνουν μαζί τους τον μηχανισμό της βάσης:
+# «Αρθρο :12», «Πληροφορίες Νομολογίας & Αρθρογραφίας :3». Δεν είναι κείμενο
+# του νόμου και δεν πρέπει να ακουστούν από φωνητικό πράκτορα.
+#
+# Ο δείκτης του άρθρου δεν διαγράφεται όμως — μεταφράζεται. Σε αυτές τις
+# εξαγωγές η ίδια η επικεφαλίδα βρίσκεται συχνά στη μέση γραμμής, κολλημένη
+# στο σχόλιο του προηγούμενου άρθρου («…(Α 98). Αρθρο :8 Προισχύσασες μορφές
+# άρθρου :2 "Άρθρο 8»), οπότε ο αγωγός προσπερνούσε ολόκληρα άρθρα. Ο δείκτης
+# της βάσης είναι εκεί ο μόνος αξιόπιστος δείκτης αρχής άρθρου.
+DEIKTIS_ARTHROU = re.compile(r"[ΆΑ]ρθρο\s*:\s*(\d+)")
+APOTYPOMATA_VASIS = [
+    re.compile(r"Πληροφορίες\s+Νομολογίας\s*&\s*Αρθρογραφίας\s*:\s*\d+"),
+    re.compile(r"Προισχύσασες\s+μορφές\s+άρθρου\s*:\s*\d+"),
+    re.compile(r"Κατ['΄’]?\s*Εξουσιοδότηση\s+εκδοθείσα\s+Νομοθεσία\s*:\s*\d+"),
+]
+# Μετά τον δείκτη, το έγγραφο επαναλαμβάνει την επικεφαλίδα με τον δικό του
+# τρόπο — «"Άρθρο 8», «Αρθρου 27», «"Αρθρο 34 Με απόφαση…». Η επανάληψη είναι
+# περιττή και, όταν σέρνει μαζί της κείμενο, γίνεται ψευδής τίτλος.
+EPANALIPSI_EPIKEFALIDAS = re.compile(
+    r"(?m)^([ΆΑ]ρθρο (\d+))\n[ \t]*[\"'«]?[ \t]*[ΆΑ]ρθρο[νυΝΥ]?[ \t]+\2\s*[.:]?(?=\s|$)"
+)
+
 _SYLLAVISMOS = re.compile(r"(\w)[-­]\n(\w)", re.UNICODE)
 _POLLA_KENA = re.compile(r"[ \t]{2,}")
 _POLLES_GRAMMES = re.compile(r"\n{3,}")
@@ -98,6 +121,21 @@ def afairese_thoryvo_selidas(keimeno: str) -> str:
     return "\n".join(kratimenes)
 
 
+def metafrase_deiktes_vasis(keimeno: str) -> str:
+    """Μετατρέπει τα αποτυπώματα της βάσης σε κανονικές επικεφαλίδες άρθρων.
+
+    Το «Αρθρο :0» δεν αντιστοιχεί σε άρθρο: η βάση βάζει εκεί το προοίμιο του
+    νομοθετήματος. Γίνεται απλή αλλαγή γραμμής.
+    """
+    for motivo in APOTYPOMATA_VASIS:
+        keimeno = motivo.sub("\n", keimeno)
+    keimeno = DEIKTIS_ARTHROU.sub(
+        lambda m: "\n" if m.group(1) == "0" else f"\nΆρθρο {m.group(1)}\n",
+        keimeno,
+    )
+    return EPANALIPSI_EPIKEFALIDAS.sub(r"\1\n", keimeno)
+
+
 def enose_syllavismo(keimeno: str) -> str:
     """«κυκλοφο-\\nρίας» -> «κυκλοφορίας»."""
     return _SYLLAVISMOS.sub(r"\1\2", keimeno)
@@ -114,6 +152,7 @@ def kanonikopoiise(keimeno: str, *, afairesi_thoryvou: bool = True) -> str:
         keimeno = keimeno.replace(palio, neo)
     keimeno = enose_syllavismo(keimeno)
     if afairesi_thoryvou:
+        keimeno = metafrase_deiktes_vasis(keimeno)
         keimeno = afairese_thoryvo_selidas(keimeno)
     keimeno = diorthose_omografous(keimeno)
     keimeno = _POLLA_KENA.sub(" ", keimeno)

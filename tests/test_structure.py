@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from nomothesia.normalize.greek import kanonikopoiise
-from nomothesia.normalize.structure import analyse_domi
+from nomothesia.normalize.structure import MEGISTES_GRAMMES_TITLOU, analyse_domi
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -194,3 +194,39 @@ def test_parapompi_me_peza_den_theoreitai_epikefalida():
     (arthro,) = analyse_domi(keimeno)
     assert arthro.titlos == "Διαστάσεις και βάρη"
     assert len(arthro.paragrafoi) == 2
+
+
+def test_paragrafos_choris_keno_meta_tin_teleia():
+    """Ο Τελωνειακός Κώδικας γράφει «1.Οι επιβάτες», χωρίς κενό.
+
+    Απαιτώντας το κενό, ο αγωγός δεν έβρισκε καμία παράγραφο: ολόκληρο το
+    άρθρο έμενε ενιαίο και η πρώτη του πρόταση περνούσε για τίτλο.
+    """
+    arthra = analyse_domi(
+        "Άρθρο 12\n1.Οι επιβάτες προσκομίζουν τις αποσκευές τους.\n"
+        "2.Η Τελωνειακή Αρχή τις εξετάζει."
+    )
+
+    assert [p.arithmos for p in arthra[0].paragrafoi] == ["1", "2"]
+
+
+def test_poso_stin_arxi_grammis_den_einai_paragrafos():
+    arthra = analyse_domi("Άρθρο 3\nΠρόστιμο\n1.500 ευρώ επιβάλλονται.")
+
+    assert arthra[0].titlos == "Πρόστιμο"
+    assert [p.arithmos for p in arthra[0].paragrafoi] == [""]
+
+
+def test_titlos_pou_den_teleionei_pote_den_einai_titlos():
+    """Το άρθρο 1 του π.δ. 237/1986 αρχίζει κατευθείαν με ορισμούς.
+
+    Χωρίς τίτλο να τελειώσει κάπου, η συνέχεια τρώει την πρώτη πρόταση του
+    σώματος και την εμφανίζει ως τίτλο τριακοσίων χαρακτήρων.
+    """
+    soma = "\n".join(
+        f"συνέχεια της πρότασης, μέρος {i}," for i in range(MEGISTES_GRAMMES_TITLOU + 3)
+    )
+    arthra = analyse_domi(f"Άρθρο 1\nΚατά την έννοια του παρόντος: α) όχημα,\n{soma}")
+
+    assert arthra[0].titlos == ""
+    assert "Κατά την έννοια του παρόντος" in arthra[0].keimeno
